@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <script src="webix/webix.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="webix/webix.css" type="text/css" charset="utf-8">
+    
+    <style>
+      body{
+        background-color: #3498db;
+      }
+      #loading {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translateX(-50%) translateY(-50%);
+      }
+      .webix_hcell.center input[type=checkbox]{
+        width:22px;
+        height:22px;
+        margin-top:12px;
+      }
+      .webix_table_checkbox{
+        width:22px;
+        height:22px;
+        margin-top:5px;
+      }
+      .row-marked{
+        background-color: #ffa;
+      }
+      .highlight{
+        background-color:#E5FFE3;
+    }
+
+	* {
+		-webkit-user-select: none;
+	}
+
+    </style>
+</head>
+<body>
+<div id="loading">
+
+</div>
+<script type="text/javascript">
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true
+
+var i = new Image();
+i.onload = function(){
+  require('./iface.js');
+}
+
+i.src = 'loading.gif';
+document.getElementById('loading').appendChild(i);
+
+</script>
+</body>
+</html>
