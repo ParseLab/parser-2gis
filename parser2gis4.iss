@@ -11,4 +11,4 @@ OutputBaseFilename="parser2gis{#AppVersion}"
 PrivilegesRequired=admin
 
 [Files]
-Source: "Z:\data\projects\parser2gis1\dist\win-unpacked\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "Z:\data\projects\parser2gis1\dist\win-unpacked\*"; DestDir: "{app}"; Excludes: "\dist\*,\node_modules\*"; Flags: recursesubdirs

@@ -2,7 +2,9 @@
 
 const fs = require('fs')
 //var dataDir = '/data/parser_data'
-
+const fetch = require('node-fetch')
+const Promise = require('bluebird')
+fetch.Promise = Promise
 var dataDir = app.getPath('userData')
 
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir)
@@ -10,123 +12,139 @@ if (!fs.existsSync(dataDir + '/db')) fs.mkdirSync(dataDir + '/db')
 if (!fs.existsSync(dataDir + '/key.json')) fs.writeFileSync(dataDir + '/key.json', '"demo"')
 if (!fs.existsSync(dataDir + '/tasks.json')) fs.writeFileSync(dataDir + '/tasks.json', '{"tasks":[],"count":0}')
 
-const fetch = require('node-fetch')
-const Bluebird = require('bluebird')
-fetch.Promise = Bluebird
+var licenseKey = require(dataDir + '/key.json')
 
-function getJson(url, callback) {
-	fetch(url)
-		.then(res => res.json())
-		.then(r => {
-			callback(null, r)
-		})
-		.catch(e => {
-			callback(e, null)
-		})
+var firmurl4 = 'http://db.parselab.org/4.0/[city]/[category].json?key=[key]'
+
+
+
+function parseFirmUrl(category, city, key) {
+	return firmurl4
+		.replace('[category]', category)
+		.replace('[city]', city)
+		.replace('[key]', key)
 }
 
-
-var curCity
-var curTaskId
-var pool
-var ids
-var co
-
-function parseBase(city, taskId, rubrics, msg, callback){
-	curCity = city
-	curTaskId = taskId
-	ids = {}
-	co = 0
-
-	fs.mkdirSync(dataDir + '/db/gis_' + curTaskId + '_' + curCity.code)
-
-	createPool(city, rubrics)
-
-	parseRubric(msg, ()=>{
-		//console.log('FINISH')
-		msg('base')
-		callback()
-	})
-}
-
-function parseRubric(msg, callback){
-	var rubricId = pool.shift()
-
-	getJson('http://db.parselab.org/4.0/' + curCity.id + '/' + rubricId + '.json?key=zzzxxx', (e, r)=>{
-		for(var i=0;i<r.length;i++){
-			if (!ids.hasOwnProperty(r[i][0])){
-				ids[r[i][0]] = true
-				co++
-				msg(co)
-			}
-		}
-
-		
-
-		fs.writeFile(dataDir + '/db/gis_' + curTaskId + '_' + curCity.code + '/' + rubricId + '.json', JSON.stringify(r), (e)=>{
-			if (pool.length > 0){
-				parseRubric(msg, callback)
-			} else {
-				callback()
-			}
-		})
-	})
-}
-
-function createPool(city, rubrics){
-	pool = []
-
-	for(var i=0;i<rubrics.length;i++){
-		pool.push(rubrics[i])
-	}
-}
 
 class Parser {
-	constructor(){
+	constructor() {
+		this.pool = []
+		this.curCity
+		this.curTaskId
+		this.curIndex
+		this.ids
+		this.co
+	}
+
+	init (){
 
 	}
 
-	parseBase(city, taskId, rubrics, msg, callback){
-		parseBase(city, taskId, rubrics, msg, ()=>{
+	createPool(city, rubrics) {
+		for (var i = 0; i < rubrics.length; i++) {
+			this.pool.push(rubrics[i])
+		}
+	}
+
+	parseBase(msg, callback) {
+		var base = this.getFirstBase()
+		
+		if (!base) {
 			callback()
+		} else {
+			var city = base.city
+			var taskId = base.taskId
+			var rubrics = base.rubrics
+			this.curCity = city
+			this.curTaskId = taskId
+			this.ids = {}
+			this.co = 0
+
+			var baseDir = dataDir + '/db/gis_' + taskId + '_' + city.code
+
+			if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir)
+
+			this.getBaseStatus(taskId, city.code)
+
+			this.createPool(city, rubrics)
+
+			this.parseRubric(msg, () => {
+				this.setBaseFinished(taskId, city.code)
+				msg({ type: "base", cityTitle: city.title })
+				this.parseBase(msg, callback)
+			})
+		}
+	}
+
+	parseRubric(msg, callback) {
+		var rubricId = this.pool.shift()
+		var url = parseFirmUrl(rubricId, this.curCity.id, licenseKey)
+		this.getJson(url, (e, r) => {
+			for (var i = 0; i < r.length; i++) {
+				if (!this.ids.hasOwnProperty(r[i][0])) {
+					this.ids[r[i][0]] = true
+					this.co++
+					msg(this.co)
+				}
+			}
+	
+			fs.writeFile(dataDir + '/db/gis_' + this.curTaskId + '_' + this.curCity.code + '/' + rubricId + '.json', JSON.stringify(r), (e) => {
+				if (this.pool.length > 0) {
+					this.parseRubric(msg, callback)
+				} else {
+					callback()
+				}
+			})
 		})
 	}
+	
+	getJson(url, callback) {
+		fetch(url)
+			.then(res => res.json())
+			.then(r => {
+				callback(null, r)
+			})
+			.catch(e => {
+				callback(e, null)
+			})
+	}
+	
 
-	createTask(name, cities, rubrics){
+	createTask(name, cities, rubrics) {
 		var tasks = JSON.parse(fs.readFileSync(dataDir + '/tasks.json'))
 		tasks.count++
 
 		tasks.tasks.push({
 			id: tasks.count,
 			name: name,
-			cities: cities, 
+			cities: cities,
 			rubrics: rubrics
 		})
 
 		fs.writeFileSync(dataDir + '/tasks.json', JSON.stringify(tasks))
 	}
 
-	getTasks(){
+	getTasks() {
 		return JSON.parse(fs.readFileSync(dataDir + '/tasks.json')).tasks
 	}
 
-	removeBases(ids){
+	removeBases(ids) {
 		var tasks = JSON.parse(fs.readFileSync(dataDir + '/tasks.json'))
 		var newTasks = []
 
-		for(var i=0;i<tasks.tasks.length;i++){
+		for (var i = 0; i < tasks.tasks.length; i++) {
 			var taskId = tasks.tasks[i].id
 			var newCities = []
-			for(var k=0;k<tasks.tasks[i].cities.length;k++){
+			for (var k = 0; k < tasks.tasks[i].cities.length; k++) {
 				var cityCode = tasks.tasks[i].cities[k].code
 				var baseId = 'gis_' + taskId + '_' + cityCode
 
-				if(!ids.includes(baseId)){
+				if (!ids.includes(baseId)) {
 					newCities.push(tasks.tasks[i].cities[k])
 				}
 			}
 
-			if (newCities.length > 0){
+			if (newCities.length > 0) {
 				tasks.tasks[i].cities = newCities
 				newTasks.push(tasks.tasks[i])
 			}
@@ -135,10 +153,10 @@ class Parser {
 		fs.writeFileSync(dataDir + '/tasks.json', JSON.stringify(tasks))
 	}
 
-	removeTasks(ids){
+	removeTasks(ids) {
 		var tasks = JSON.parse(fs.readFileSync(dataDir + '/tasks.json'))
-		for(var i=0;i<tasks.tasks.length;i++){
-			if(ids.includes(tasks.tasks[i].id)){
+		for (var i = 0; i < tasks.tasks.length; i++) {
+			if (ids.includes(tasks.tasks[i].id)) {
 				tasks.tasks.splice(i, 1)
 			}
 		}
@@ -146,30 +164,89 @@ class Parser {
 		fs.writeFileSync(dataDir + '/tasks.json', JSON.stringify(tasks))
 	}
 
-	getBases(){
+	getBases() {
 		var tasks = this.getTasks()
 		var res = []
-		var co = 0
-		for(var k=0;k<tasks.length;k++){
-			for(var i=0;i<tasks[k].cities.length;i++){
-				co++
-				res.push({
-					id: co,
+		this.co = 0
+		for (var k = 0; k < tasks.length; k++) {
+			for (var i = 0; i < tasks[k].cities.length; i++) {
+				this.co++
+
+				var o = {
+					id: this.co,
 					taskId: tasks[k].id,
 					city: tasks[k].cities[i],
 					rubrics: tasks[k].rubrics,
 					title: tasks[k].cities[i].title,
 					task_title: tasks[k].name,
-					dbname: 'gis_'+tasks[k].id+'_'+tasks[k].cities[i].code,
+					dbname: 'gis_' + tasks[k].id + '_' + tasks[k].cities[i].code,
 					count: '-'
-				})
+				}
+
+				var status = this.getBaseStatus(tasks[k].id, tasks[k].cities[i].code)
+
+				for (var p in status) {
+					o[p] = status[p]
+				}
+
+				res.push(o)
 			}
 		}
 
 		return res
 	}
 
-	getKey(){
+	getFirstBase() {
+		var bases = this.getBases()
+
+		for (var i = 0; i < bases.length; i++) {
+			if (!bases[i].finished) {
+				this.curIndex = i
+				return bases[i]
+			}
+		}
+
+		return false
+	}
+
+	getBaseStatus(taskId, cityCode) {
+		var statusFile = dataDir + '/db/gis_' + taskId + '_' + cityCode + '/status.json'
+		var status
+
+		if (fs.existsSync(statusFile)) {
+			status = JSON.parse(fs.readFileSync(statusFile))
+		} else {
+			status = {
+				finished: false,
+				count: 0
+			}
+
+			//this.saveBaseStatus(taskId, cityCode, status)
+		}
+
+		return status
+	}
+
+	saveBaseStatus(taskId, cityCode, status) {
+		var statusFile = dataDir + '/db/gis_' + taskId + '_' + cityCode + '/status.json'
+
+		fs.writeFileSync(statusFile, JSON.stringify(status))
+	}
+
+	setBaseFinished(taskId, cityCode) {
+		var status = this.getBaseStatus(taskId, cityCode)
+		status.count = this.co
+		status.finished = true
+		this.saveBaseStatus(taskId, cityCode, status)
+	}
+
+	setBaseCount(taskId, cityCode) {
+		var status = this.getBaseStatus(taskId, cityCode)
+		status.count = co
+		this.saveBaseStatus(taskId, cityCode, status)
+	}
+
+	getKey() {
 		return JSON.parse(fs.readFileSync(dataDir + '/key.json'))
 	}
 }

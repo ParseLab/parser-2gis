@@ -647,32 +647,33 @@ function startParsing() {
 	$$('deletebutton').disable()
 	$$('exportbutton').disable()
 	$$('propertybutton').disable()
-
 	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "stop", label: "Стоп", autowidth: true, click: stopParsing, tooltip: "Остановка парсинга" }, $$('ctlbutton'))
-
-	var id = $$('basestable').getIdByIndex(0)
-	var record = $$('basestable').getItem(id)
-
-	parser.parseBase(record.city, record.taskId, record.rubrics, (count)=>{
-		if(count == 'base'){
-			$$('basestable').addCellCss(id, "count", "highlight")
+	parser.parseBase((r)=>{
+		var id = $$('basestable').getIdByIndex(parser.curIndex)
+		var record = $$('basestable').getItem(id)
+		if (r.type){
+			if(r.type == 'base'){
+				$$('basestable').addCellCss(id, "count", "highlight")
+				webix.message("Сборка города " + r.cityTitle + " завершена")
+			}
 		} else {
-			record['count'] = count
+			record['count'] = r
 			$$('basestable').updateItem(id, record)
 		}
 	}, ()=>{
-
+		stopParsing()
 	})
 	//$$('basestable').updateItem(id, record)
 
 }
 
 
+
 function stopParsing() {
 	if (started) {
 		started = false
 		webix.message("Парсинг завершен")
-		gis.stopChilds()
+		//gis.stopChilds()
 		$$('threads').enable()
 		$$('deletebutton').enable()
 		$$('exportbutton').enable()
