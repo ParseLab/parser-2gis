@@ -1,4 +1,13 @@
 /* eslint-disable semi */
+var version = require('./version.json')
+
+if (process.argv.includes('-u')){
+
+	console.log(r)
+	process.exit(0)
+	
+}
+
 const electron = require('electron');
 // Module to control application life.
 const app = electron.app;
@@ -20,7 +29,7 @@ function createWindow() {
 		backgroundColor: '#3498db',
 		show: true,
 		resizable: true,
-		title: "Парсер 2Gis"
+		title: "Парсер 2Gis " + version
 	})
 
 	// mainWindow.setMenu(null);

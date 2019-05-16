@@ -1,6 +1,9 @@
 /* eslint-disable no-undef */
 var fs = require('fs')
+//const webix = require('./webix/webix.js')
+//import * as webix from "webix";
 
+//const t = webix.uid();
 const fetch = require('node-fetch')
 const Bluebird = require('bluebird')
 fetch.Promise = Bluebird
@@ -15,7 +18,7 @@ function getJson(url, callback) {
 			callback(e, null)
 		})
 }
-
+var keywin
 var remote = require('electron').remote
 global.app = remote.app
 //var app = remote.app
@@ -24,7 +27,7 @@ var win = remote.getCurrentWindow()
 var shell = require('electron').shell
 var started = false
 var taskData = { cities: '', rubrics: '', name: '' }
-var dat 
+var dat
 var currentVersion = JSON.parse(fs.readFileSync(__dirname + '/version.json'))
 
 var version
@@ -33,18 +36,60 @@ var property
 
 var parser = require(__dirname + '/parser4.js')
 
-function getCityData(){
+function isDemo() {
+	if (parser.licenseKey == 'demo') return true
+	else return false
+}
+
+function getCityData() {
 	var countries = []
 
-	for(var id in dat.countries){
+	for (var id in dat.countries) {
 		var cities = []
-		for(var i=0;i<dat.cities.length;i++){
-			if (dat.cities[i].country == id){
+		for (var i = 0; i < dat.cities.length; i++) {
+			if (dat.cities[i].country == id) {
 				cities.push({
 					id: dat.cities[i].id,
 					value: dat.cities[i].name,
 					code: dat.cities[i].code
 				})
+			}
+		}
+
+		
+		if (cities.length > 0){
+			countries.push({
+				id: id,
+				open: false,
+				value: dat.countries[id],
+				data: cities
+			})
+		}
+
+	}
+
+	return countries
+}
+
+
+function getCityData2() {
+	var countries = []
+
+	for (var id in dat.countries) {
+		var cities = []
+		for (var i = 0; i < dat.cities.length; i++) {
+			if (dat.cities[i].country == id) {
+				var o = {
+					id: dat.cities[i].id,
+					value: dat.cities[i].name,
+					code: dat.cities[i].code
+				}
+
+				if (isDemo()) {
+					if (o.id == '69') cities.push(o)
+				} else {
+					cities.push(o)
+				}
 			}
 		}
 
@@ -59,12 +104,12 @@ function getCityData(){
 	return countries
 }
 
-function getCategoryData(){
+function getCategoryData() {
 	var categories = []
 
-	for(var k=0;k<dat.categories.length;k++){
+	for (var k = 0; k < dat.categories.length; k++) {
 		var rubrics = []
-		for(var i=0;i<dat.categories[k].children.length;i++){
+		for (var i = 0; i < dat.categories[k].children.length; i++) {
 			rubrics.push({
 				id: dat.categories[k].children[i].id,
 				value: dat.categories[k].children[i].name
@@ -87,13 +132,15 @@ function getCategoryData(){
 	}]
 }
 
-function loadDat(callback){
-	getJson('https://parselab.org/key/key3.php?project=69&key=' + parser.getKey(), (e, r)=>{
-		dat = r
-		version = { 
-			last: dat.last_version, 
-			current: currentVersion, 
-			url: dat.downloadUrl 
+function loadDat(callback) {
+	var project = '32'
+	if (isDemo()) project = '69'
+	getJson('https://parselab.org/key/key3.php?project=' + project + '&key=' + parser.licenseKey, (e, r) => {
+	dat = r
+		version = {
+			last: dat.last_version,
+			current: currentVersion,
+			url: dat.downloadUrl
 		}
 		callback()
 	})
@@ -113,7 +160,7 @@ function checkNewVersion(version) {
 }
 
 webix.ready(function () {
-	loadDat(()=>{
+	loadDat(() => {
 		if (checkNewVersion(version)) {
 			webix.modalbox({
 				title: "Доступна новая версия!",
@@ -129,6 +176,9 @@ webix.ready(function () {
 		}
 		interface_init()
 		reloadBases()
+		if (isDemo()) {
+			$$('keywin').show()
+		}
 	})
 })
 
@@ -137,8 +187,16 @@ function mark_finished(value, data) {
 		return "highlight"
 }
 
+function mark_minus(value) {
+	if (value == 0) {
+		return "-"
+	} else {
+		return value
+	}
+}
+
 function interface_init() {
-	webix.ui({
+	keywin = webix.ui({
 		view: "window",
 		id: "keywin",
 		move: true,
@@ -150,7 +208,7 @@ function interface_init() {
 		head: {
 			view: "toolbar",
 			cols: [
-				{ view: "label", label: "Неактивированная версия парсера", id: "keylabel" }
+				{ view: "label", label: "Неактивированная версия парсера"}
 			]
 		},
 		body: {
@@ -160,7 +218,7 @@ function interface_init() {
 					margin: 5,
 					cols: [
 						{ view: "button", value: "Активировать", click: setKey },
-						{ view: "button", value: "Бесплатная версия", click: "$$('keywin').hide();" },
+						{ view: "button", value: "Бесплатная версия", click: loadDemo },
 						{ view: "button", value: "Купить ключ", click: buyParser, type: "form" }
 					]
 				},
@@ -263,13 +321,14 @@ function interface_init() {
 				view: "datatable",
 				scrollX: false,
 				id: "basestable",
+				eachRow: mark_minus,
 				columns: [
 					{ id: "status", header: { content: "masterCheckbox", css: "center", id: "masterCheckbox", contentId: "mc1" }, width: 60, css: "center", checkValue: "1", uncheckValue: "0", template: "{common.checkbox()}" },
 					{ id: "id", header: "", width: 50 },
 					{ id: "title", header: "Город", width: 200 },
 					{ id: "task_title", header: "Задача", width: 200 },
 					{ id: "dbname", header: "Имя базы", width: 200 },
-					{ id: "count", header: "Организаций", width: 100, cssFormat: mark_finished }
+					{ id: "count", header: "Организаций", width: 100, format: mark_minus, addCss: mark_finished}
 				],
 			},
 			{
@@ -277,7 +336,7 @@ function interface_init() {
 					{ view: "button", type: "iconButton", icon: "download", label: "Выгрузить выделенные", autowidth: true, id: "exportbutton", click: exportBases, align: "left", tooltip: "Выгрузить выделенные базы" },
 					{ view: "button", type: "iconButton", icon: "remove", label: "Удалить выделенные", autowidth: true, id: "deletebutton", click: deleteBases, align: "left", tooltip: "Удалить выделенные базы" },
 					{ gravity: 4 },
-					{ view: "button", type: "iconButton", icon: "cog", label: "Настройки", autowidth: true, id: "propertybutton", click: showProperty, align: "right", tooltip: "Настройки" }
+					{ view: "button", type: "iconButton", icon: "cog", label: "Настройки", autowidth: true, id: "propertybutton", click: showProperty, align: "right", tooltip: "Настройки", disabled: true }
 				]
 			},
 		]
@@ -306,9 +365,6 @@ function interface_init() {
 			]
 		}
 	})
-	if (dat.user_id == '0') {
-		$$('keywin').show()
-	}
 
 	$$("mywin").attachEvent("onKeyPress", function (code) {
 		if (code == '27') {
@@ -428,8 +484,9 @@ function createBases() {
 		webix.ui({
 			id: "lll",
 			rows: [
-				{view: "text", id: "searchtext", placeholder: "Поиск"},
-				{view: "tree",filterMode: {},
+				{ view: "text", id: "searchtext", placeholder: "Поиск" },
+				{
+					view: "tree", filterMode: {},
 					id: "mytree", threeState: true, scroll: "y", template: "{common.icon()} {common.checkbox()}&nbsp<span>#value#</span>", select: false, data: getCategoryData(), datatype: "json", ready: function () {
 						this.checkItem("root")
 					}
@@ -496,10 +553,10 @@ function getSelectedRubrics() {
 	var categories = root[0].data
 	var res = []
 
-/* 	if (root[0].checked) {
-		return res
-	}
- */
+	/* 	if (root[0].checked) {
+			return res
+		}
+	 */
 	for (var i = 0; i < categories.length; i++) {
 		for (var k = 0; k < categories[i].data.length; k++) {
 			if (categories[i].data[k].checked) {
@@ -573,6 +630,39 @@ function exportBases() {
 			}
 		})
 	}
+		
+}
+
+
+function exportBases2() {
+	if (getCheckedCount() > 0) {
+		var dp = ''
+
+		if (dat.user_id == '0') {
+			dp = 'gis_abakan'
+		}
+
+		dialog.showSaveDialog({ buttonLabel: "Выгрузить", defaultPath: dp, filters: [{ name: 'Excel', extensions: ['csv'] }] }, function (filename) {
+
+			if (filename) {
+				$$('countlabel').setValue('0')
+				$$('exportwin').show()
+
+				var res = { filename: filename, bases: $$('basestable').serialize() }
+
+				gis.exportBases(JSON.stringify(res), function (res, type) {
+					if (type == 'finished') {
+						$$('exportwin').hide()
+						uncheckMaster()
+						shell.openItem(filename)
+					}
+					else if (type == 'msg') {
+						$$('countlabel').setValue(res)
+					}
+				})
+			}
+		})
+	}
 }
 
 function buyParser() {
@@ -581,14 +671,13 @@ function buyParser() {
 
 function setKey() {
 	if ($$('keytext').getValue().trim() != '') {
-		api.query('set_key', $$('keytext').getValue(), function (res) {
-			if (JSON.parse(res).res != '0') {
+		parser.setKey($$('keytext').getValue(), function (res) {
+			if (res) {
 				webix.alert("Ваш ключ успешно активирован!", function () {
 					$$('keywin').hide()
 					win.reload()
 				})
-			}
-			else {
+			} else {
 				webix.alert("Указанный вами ключ недействителен")
 				$$('keytext').setValue('')
 			}
@@ -648,31 +737,38 @@ function startParsing() {
 	$$('exportbutton').disable()
 	$$('propertybutton').disable()
 	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "stop", label: "Стоп", autowidth: true, click: stopParsing, tooltip: "Остановка парсинга" }, $$('ctlbutton'))
-	parser.parseBase((r)=>{
+	parser.start((r) => {
 		var id = $$('basestable').getIdByIndex(parser.curIndex)
 		var record = $$('basestable').getItem(id)
-		if (r.type){
-			if(r.type == 'base'){
+		if (r.type) {
+			if (r.type == 'base') {
 				$$('basestable').addCellCss(id, "count", "highlight")
 				webix.message("Сборка города " + r.cityTitle + " завершена")
+			} else if (r.type == 'finish'){
+				webix.message("Парсинг завершен")
 			}
 		} else {
 			record['count'] = r
 			$$('basestable').updateItem(id, record)
 		}
-	}, ()=>{
+	}, () => {
 		stopParsing()
 	})
 	//$$('basestable').updateItem(id, record)
 
 }
 
+function loadDemo() {
 
+	keywin.close()
+	//$$('keywin').hide();
+	//win.reload()
+}
 
 function stopParsing() {
+	parser.stop()
 	if (started) {
 		started = false
-		webix.message("Парсинг завершен")
 		//gis.stopChilds()
 		$$('threads').enable()
 		$$('deletebutton').enable()

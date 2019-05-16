@@ -12,11 +12,7 @@ if (!fs.existsSync(dataDir + '/db')) fs.mkdirSync(dataDir + '/db')
 if (!fs.existsSync(dataDir + '/key.json')) fs.writeFileSync(dataDir + '/key.json', '"demo"')
 if (!fs.existsSync(dataDir + '/tasks.json')) fs.writeFileSync(dataDir + '/tasks.json', '{"tasks":[],"count":0}')
 
-var licenseKey = require(dataDir + '/key.json')
-
 var firmurl4 = 'http://db.parselab.org/4.0/[city]/[category].json?key=[key]'
-
-
 
 function parseFirmUrl(category, city, key) {
 	return firmurl4
@@ -34,22 +30,38 @@ class Parser {
 		this.curIndex
 		this.ids
 		this.co
+		this.started = false
+		this.licenseKey = this.getKey()
 	}
 
-	init (){
+	init() {
 
 	}
 
-	createPool(city, rubrics) {
-		for (var i = 0; i < rubrics.length; i++) {
-			this.pool.push(rubrics[i])
+	start(msg, callback) {
+		this.started = true
+		this.parseBase(msg, callback)
+	}
+
+	createPool(base) {
+		var status = this.getBaseStatus(base.taskId, base.city.code)
+		if (status.count > 0 && !status.finished) {
+			this.pool = status.pool
+			this.ids = status.ids
+			this.co = status.count
+		} else {
+			this.ids = {}
+			this.co = 0
+			for (var i = 0; i < base.rubrics.length; i++) {
+				this.pool.push(base.rubrics[i])
+			}
 		}
 	}
 
 	parseBase(msg, callback) {
 		var base = this.getFirstBase()
-		
 		if (!base) {
+			msg({ type: "finish"})
 			callback()
 		} else {
 			var city = base.city
@@ -57,47 +69,56 @@ class Parser {
 			var rubrics = base.rubrics
 			this.curCity = city
 			this.curTaskId = taskId
-			this.ids = {}
-			this.co = 0
-
 			var baseDir = dataDir + '/db/gis_' + taskId + '_' + city.code
 
 			if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir)
 
-			this.getBaseStatus(taskId, city.code)
-
-			this.createPool(city, rubrics)
+			this.createPool(base)
 
 			this.parseRubric(msg, () => {
-				this.setBaseFinished(taskId, city.code)
-				msg({ type: "base", cityTitle: city.title })
-				this.parseBase(msg, callback)
+				//this.setBaseFinished(taskId, city.code)
+				if (this.started) {
+					this.finish()
+					msg({ type: "base", cityTitle: city.title })
+					this.parseBase(msg, callback)
+				} else {
+					callback()
+				}
 			})
 		}
 	}
 
 	parseRubric(msg, callback) {
-		var rubricId = this.pool.shift()
-		var url = parseFirmUrl(rubricId, this.curCity.id, licenseKey)
-		this.getJson(url, (e, r) => {
-			for (var i = 0; i < r.length; i++) {
-				if (!this.ids.hasOwnProperty(r[i][0])) {
-					this.ids[r[i][0]] = true
-					this.co++
-					msg(this.co)
+		if (this.started) {
+			var rubricId = this.pool.shift()
+			var url = parseFirmUrl(rubricId, this.curCity.id, this.licenseKey)
+			this.getJson(url, (e, r) => {
+				var c = 0
+				for (var i = 0; i < r.length; i++) {
+					if (!this.ids.hasOwnProperty(r[i][0])) {
+						this.ids[r[i][0]] = true
+						c++
+					}
 				}
-			}
-	
-			fs.writeFile(dataDir + '/db/gis_' + this.curTaskId + '_' + this.curCity.code + '/' + rubricId + '.json', JSON.stringify(r), (e) => {
-				if (this.pool.length > 0) {
-					this.parseRubric(msg, callback)
-				} else {
-					callback()
-				}
+				this.co += c
+
+				msg(this.co)
+
+				fs.writeFile(dataDir + '/db/gis_' + this.curTaskId + '_' + this.curCity.code + '/' + rubricId + '.json', JSON.stringify(r), (e) => {
+					if (this.pool.length > 0) {
+						this.parseRubric(msg, callback)
+					} else {
+						this.finish()
+						callback()
+					}
+				})
 			})
-		})
+		} else {
+			this.pause()
+			callback()
+		}
 	}
-	
+
 	getJson(url, callback) {
 		fetch(url)
 			.then(res => res.json())
@@ -108,7 +129,17 @@ class Parser {
 				callback(e, null)
 			})
 	}
-	
+
+	getText(url, callback) {
+		fetch(url)
+			.then(res => res.text())
+			.then(r => {
+				callback(null, r)
+			})
+			.catch(e => {
+				callback(e, null)
+			})
+	}
 
 	createTask(name, cities, rubrics) {
 		var tasks = JSON.parse(fs.readFileSync(dataDir + '/tasks.json'))
@@ -185,9 +216,8 @@ class Parser {
 
 				var status = this.getBaseStatus(tasks[k].id, tasks[k].cities[i].code)
 
-				for (var p in status) {
-					o[p] = status[p]
-				}
+				o.finished = status.finished
+				o.count = status.count
 
 				res.push(o)
 			}
@@ -218,7 +248,9 @@ class Parser {
 		} else {
 			status = {
 				finished: false,
-				count: 0
+				count: 0,
+				ids: {},
+				pool: []
 			}
 
 			//this.saveBaseStatus(taskId, cityCode, status)
@@ -240,14 +272,47 @@ class Parser {
 		this.saveBaseStatus(taskId, cityCode, status)
 	}
 
+	finish() {
+		var status = this.getBaseStatus(this.curTaskId, this.curCity.code)
+		status.count = this.co
+		status.finished = true
+		status.ids = {}
+		status.pool = []
+		this.saveBaseStatus(this.curTaskId, this.curCity.code, status)
+	}
+
+	stop() {
+		this.started = false
+	}
+
+	pause() {
+		var status = this.getBaseStatus(this.curTaskId, this.curCity.code)
+		status.count = this.co
+		status.ids = this.ids
+		status.pool = this.pool
+		this.saveBaseStatus(this.curTaskId, this.curCity.code, status)
+	}
+
 	setBaseCount(taskId, cityCode) {
 		var status = this.getBaseStatus(taskId, cityCode)
-		status.count = co
+		status.count = this.co
 		this.saveBaseStatus(taskId, cityCode, status)
 	}
 
 	getKey() {
 		return JSON.parse(fs.readFileSync(dataDir + '/key.json'))
+	}
+
+	setKey(key, callback) {
+		this.getText('https://parselab.org/key/key3.php?key='+key+'&key_check', (e, r)=>{
+			if (r != '0'){
+				this.licenseKey = key
+				fs.writeFileSync(dataDir + '/key.json', JSON.stringify(key))
+				callback(r)
+			} else {
+				callback(false)
+			}
+		})
 	}
 }
 

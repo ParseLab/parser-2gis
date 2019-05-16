@@ -5,7 +5,12 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "build": "electron-builder . --win --dir",
     "publish": "node publish.js"
+  },
+  "build": {
+    "appId": "com.parselab.parser2gis4",
+    "asar": true
   },
   "repository": {
     "type": "git",
@@ -19,13 +24,15 @@
   "homepage": "https://github.com/electron/electron-quick-start#readme",
   "devDependencies": {
     "electron": "*",
-    "electron-builder": "*"
+    "electron-builder": "^20.41.0",
+    "electron-winstaller": "^3.0.4"
   },
   "dependencies": {
     "bluebird": "^3.5.3",
     "iconv-lite": "^0.4.13",
     "ini": "^1.3.4",
     "minimist": "^1.2.0",
-    "node-fetch": "^2.3.0"
+    "node-fetch": "^2.3.0",
+    "webix": "^6.2.1"
   }
 }
