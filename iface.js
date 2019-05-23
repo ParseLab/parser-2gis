@@ -442,7 +442,7 @@ function reloadBases() {
 				$$('deletebutton').enable()
 				$$('exportbutton').enable()
 				$$('threads').enable()
-				$$('propertybutton').enable()
+				//$$('propertybutton').enable()
 			}
 		}
 		else {
@@ -450,7 +450,7 @@ function reloadBases() {
 			$$('deletebutton').disable()
 			$$('exportbutton').disable()
 			$$('threads').disable()
-			$$('propertybutton').disable()
+			//$$('propertybutton').disable()
 		}
 	}
 
