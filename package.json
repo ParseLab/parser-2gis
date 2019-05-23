@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "start2": "electron bottest.js",
     "build": "electron-builder . --win --dir",
     "publish": "node publish.js"
   },
@@ -29,7 +30,7 @@
   },
   "dependencies": {
     "bluebird": "^3.5.3",
-    "iconv-lite": "^0.4.13",
+    "iconv-lite": "^0.4.24",
     "ini": "^1.3.4",
     "minimist": "^1.2.0",
     "node-fetch": "^2.3.0",

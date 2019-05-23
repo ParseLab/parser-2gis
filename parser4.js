@@ -4,6 +4,8 @@ const fs = require('fs')
 //var dataDir = '/data/parser_data'
 const fetch = require('node-fetch')
 const Promise = require('bluebird')
+var iconv = require('iconv-lite');
+
 fetch.Promise = Promise
 var dataDir = app.getPath('userData')
 
@@ -297,6 +299,39 @@ class Parser {
 		var status = this.getBaseStatus(taskId, cityCode)
 		status.count = this.co
 		this.saveBaseStatus(taskId, cityCode, status)
+	}
+
+	export(tasks, fileName, callback) {
+		var co = 1
+		var header = `sep=;\n"id";"name";"city_name";"geometry_name";"post_code";"phone";"email";"website";"vkontakte";"instagram";"lon";"lat";"category";"subcategory"\n`
+		fs.appendFileSync(fileName, header);
+
+		for(var i=0;i<tasks.length;i++){
+			var task = tasks[i]
+			var ids = []
+			for(var k=0;k<task.rubrics.length;k++){
+				var rubricFile = dataDir + '/db/' + task.dbname + '/' + task.rubrics[k] + '.json'
+				
+				var d = JSON.parse(fs.readFileSync(rubricFile))
+
+				for (var n =0; n < d.length; n++){
+					var arr = d[n]
+
+					if (!ids.includes(arr[0])){
+						ids.push(arr[0])
+						var line = `"${co}";"${arr[1]}";"${arr[2]}";"${arr[3]}";"${arr[4]}";"${arr[5]}";"${arr[7]}";"${arr[8]}";"${arr[9]}";"${arr[10]}";"${arr[11]}";"${arr[12]}";"${arr[13]}";"${arr[14]}"\n`
+						fs.appendFileSync(fileName, iconv.encode(line, 'win1251'));
+						callback('msg', co)
+						co++
+					}
+
+
+				}
+				
+			}
+		}
+
+		callback('finished', null)
 	}
 
 	getKey() {

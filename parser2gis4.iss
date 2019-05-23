@@ -14,7 +14,10 @@ OutputBaseFilename="parser2gis{#AppVersion}"
 PrivilegesRequired=lowest
 
 [Files]
-Source: "Z:\media\vitaly\Data\projects\parser2gis1\dist\win-unpacked\*"; DestDir: "{app}"; Excludes: "\dist\*,\node_modules\*"; Flags: recursesubdirs
+Source: "Z:\media\vitaly\Data\projects\parser2gis1\dist\win-ia32-unpacked\*"; DestDir: "{app}"; Excludes: "\dist\*,\node_modules\*"; Flags: recursesubdirs
+
+[Run]
+Filename: {app}\parser2gis4.exe; Flags: nowait postinstall skipifsilent
 
 [Icons]
 Name: "{commonprograms}\ParseLab\{#MyAppName}"; Filename: "{app}\parser2gis4.exe"; IconFilename: "{app}\parser2gis4.exe"

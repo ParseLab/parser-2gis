@@ -10,7 +10,7 @@ const rl = readline.createInterface({
 rl.question(`Enter version number [${ver}]: `, (answer) => {
 	rl.close();
 	if (answer.trim() != '') ver = answer
-	cp.exec(`/media/vitaly/Data/projects/parser2gis1/node_modules/.bin/build --win --dir -c.extraMetadata.version=${ver}`, (e, r) => {
+	cp.exec(`/media/vitaly/Data/projects/parser2gis1/node_modules/.bin/build --win --ia32 --dir -c.extraMetadata.version=${ver}`, (e, r) => {
 		if (e) console.error(e)
 		else console.log(r)
  		cp.exec(`wine "z:/media/vitaly/Data/public/Inno Setup 5/iscc.exe" -DAppVersion=${ver} parser2gis4.iss`, (e, r) => {

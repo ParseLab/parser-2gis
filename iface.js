@@ -238,7 +238,7 @@ function interface_init() {
 		head: {
 			view: "toolbar",
 			cols: [
-				{ view: "label", label: "Настройки", id: "keylabel" }
+				{ view: "label",label: "Настройки", id: "keylabel" }
 			]
 		},
 		body: {
@@ -610,9 +610,34 @@ function exportBases() {
 		}
 
 		dialog.showSaveDialog({ buttonLabel: "Выгрузить", defaultPath: dp, filters: [{ name: 'Excel', extensions: ['csv'] }] }, function (filename) {
-
 			if (filename) {
-				$$('countlabel').setValue('0')
+				if (getCheckedCount() > 0) {
+					var tasks = $$('basestable').serialize()
+					var checked = []
+			
+					for (var i = 0; i < tasks.length; i++) {
+						if (tasks[i].status == '1') {
+							checked.push(tasks[i])
+						}
+					}
+
+					$$('countlabel').setValue('0')
+					$$('exportwin').show()
+
+					parser.export(checked, filename, (type, res)=>{
+						if (type == 'finished') {
+							webix.message("Выгрузка выполнена")
+							$$('exportwin').hide()
+							uncheckMaster()
+							shell.openItem(filename)
+						}
+						else if (type == 'msg') {
+							$$('countlabel').setValue(res)
+						}						
+					})
+			
+				}
+/* 				$$('countlabel').setValue('0')
 				$$('exportwin').show()
 
 				var res = { filename: filename, bases: $$('basestable').serialize() }
@@ -626,7 +651,7 @@ function exportBases() {
 					else if (type == 'msg') {
 						$$('countlabel').setValue(res)
 					}
-				})
+				}) */
 			}
 		})
 	}
