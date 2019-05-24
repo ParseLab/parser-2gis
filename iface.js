@@ -1,9 +1,5 @@
-/* eslint-disable no-undef */
 var fs = require('fs')
-//const webix = require('./webix/webix.js')
-//import * as webix from "webix";
 
-//const t = webix.uid();
 const fetch = require('node-fetch')
 const Bluebird = require('bluebird')
 fetch.Promise = Bluebird
@@ -56,8 +52,7 @@ function getCityData() {
 			}
 		}
 
-		
-		if (cities.length > 0){
+		if (cities.length > 0) {
 			countries.push({
 				id: id,
 				open: false,
@@ -136,7 +131,7 @@ function loadDat(callback) {
 	var project = '32'
 	if (isDemo()) project = '69'
 	getJson('https://parselab.org/key/key3.php?project=' + project + '&key=' + parser.licenseKey, (e, r) => {
-	dat = r
+		dat = r
 		version = {
 			last: dat.last_version,
 			current: currentVersion,
@@ -187,7 +182,7 @@ function mark_finished(value, data) {
 		return "highlight"
 }
 
-function mark_minus(value) {
+function mark_minus(value, data) {
 	if (value == 0) {
 		return "-"
 	} else {
@@ -208,7 +203,7 @@ function interface_init() {
 		head: {
 			view: "toolbar",
 			cols: [
-				{ view: "label", label: "Неактивированная версия парсера"}
+				{ view: "label", label: "Неактивированная версия парсера" }
 			]
 		},
 		body: {
@@ -238,7 +233,7 @@ function interface_init() {
 		head: {
 			view: "toolbar",
 			cols: [
-				{ view: "label",label: "Настройки", id: "keylabel" }
+				{ view: "label", label: "Настройки", id: "keylabel" }
 			]
 		},
 		body: {
@@ -328,7 +323,7 @@ function interface_init() {
 					{ id: "title", header: "Город", width: 200 },
 					{ id: "task_title", header: "Задача", width: 200 },
 					{ id: "dbname", header: "Имя базы", width: 200 },
-					{ id: "count", header: "Организаций", width: 100, format: mark_minus, addCss: mark_finished}
+					{ id: "count", header: "Организаций", width: 100, format: mark_minus, cssFormat: mark_finished }
 				],
 			},
 			{
@@ -374,16 +369,11 @@ function interface_init() {
 }
 
 function loadProperty(callback) {
-	api.query('get_property', '', function (p) {
-		property = p
-		callback()
-	})
+
 }
 
 function setProperty() {
-	api.query('set_property', JSON.stringify($$("sets").getValues()), function () {
-		$$('propertywin').hide()
-	})
+
 }
 
 function selectTask() {
@@ -608,86 +598,38 @@ function exportBases() {
 		if (dat.user_id == '0') {
 			dp = 'gis_abakan'
 		}
-
+		$$('exportbutton').disable()
 		dialog.showSaveDialog({ buttonLabel: "Выгрузить", defaultPath: dp, filters: [{ name: 'Excel', extensions: ['csv'] }] }, function (filename) {
+			$$('exportbutton').enable()
 			if (filename) {
 				if (getCheckedCount() > 0) {
 					var tasks = $$('basestable').serialize()
 					var checked = []
-			
+
 					for (var i = 0; i < tasks.length; i++) {
-						if (tasks[i].status == '1') {
+						if (tasks[i].status == '1' && tasks[i].count > 0)  {
 							checked.push(tasks[i])
 						}
 					}
 
-					$$('countlabel').setValue('0')
 					$$('exportwin').show()
+					$$('countlabel').setValue('0')
 
-					parser.export(checked, filename, (type, res)=>{
-						if (type == 'finished') {
-							webix.message("Выгрузка выполнена")
-							$$('exportwin').hide()
-							uncheckMaster()
-							shell.openItem(filename)
-						}
-						else if (type == 'msg') {
-							$$('countlabel').setValue(res)
-						}						
+					parser.on('msg', (c) => {
+						$$('countlabel').setValue(c.toString())
 					})
-			
+
+					parser.export(checked, filename, (e) => {
+						webix.message("Выгрузка выполнена")
+						$$('exportwin').hide()
+						uncheckMaster()
+						shell.openItem(filename)
+					})
 				}
-/* 				$$('countlabel').setValue('0')
-				$$('exportwin').show()
-
-				var res = { filename: filename, bases: $$('basestable').serialize() }
-
-				gis.exportBases(JSON.stringify(res), function (res, type) {
-					if (type == 'finished') {
-						$$('exportwin').hide()
-						uncheckMaster()
-						shell.openItem(filename)
-					}
-					else if (type == 'msg') {
-						$$('countlabel').setValue(res)
-					}
-				}) */
 			}
 		})
 	}
-		
-}
 
-
-function exportBases2() {
-	if (getCheckedCount() > 0) {
-		var dp = ''
-
-		if (dat.user_id == '0') {
-			dp = 'gis_abakan'
-		}
-
-		dialog.showSaveDialog({ buttonLabel: "Выгрузить", defaultPath: dp, filters: [{ name: 'Excel', extensions: ['csv'] }] }, function (filename) {
-
-			if (filename) {
-				$$('countlabel').setValue('0')
-				$$('exportwin').show()
-
-				var res = { filename: filename, bases: $$('basestable').serialize() }
-
-				gis.exportBases(JSON.stringify(res), function (res, type) {
-					if (type == 'finished') {
-						$$('exportwin').hide()
-						uncheckMaster()
-						shell.openItem(filename)
-					}
-					else if (type == 'msg') {
-						$$('countlabel').setValue(res)
-					}
-				})
-			}
-		})
-	}
 }
 
 function buyParser() {
@@ -755,6 +697,8 @@ function startParsing2() {
 	})
 }
 
+
+
 function startParsing() {
 	started = true
 	$$('threads').disable()
@@ -769,7 +713,7 @@ function startParsing() {
 			if (r.type == 'base') {
 				$$('basestable').addCellCss(id, "count", "highlight")
 				webix.message("Сборка города " + r.cityTitle + " завершена")
-			} else if (r.type == 'finish'){
+			} else if (r.type == 'finish') {
 				webix.message("Парсинг завершен")
 			}
 		} else {
@@ -791,15 +735,15 @@ function loadDemo() {
 }
 
 function stopParsing() {
+	started = false
 	parser.stop()
-	if (started) {
-		started = false
-		//gis.stopChilds()
-		$$('threads').enable()
-		$$('deletebutton').enable()
-		$$('exportbutton').enable()
-		$$('propertybutton').enable()
-		webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "play", label: "Старт", autowidth: true, click: startParsing, tooltip: "Запуск парсинга" }, $$('ctlbutton'))
-	}
+
+	//gis.stopChilds()
+	$$('threads').enable()
+	$$('deletebutton').enable()
+	$$('exportbutton').enable()
+	$$('propertybutton').enable()
+	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "play", label: "Старт", autowidth: true, click: startParsing, tooltip: "Запуск парсинга" }, $$('ctlbutton'))
+
 }
 

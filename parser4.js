@@ -5,7 +5,7 @@ const fs = require('fs')
 const fetch = require('node-fetch')
 const Promise = require('bluebird')
 var iconv = require('iconv-lite');
-
+const EventEmitter = require('events');
 fetch.Promise = Promise
 var dataDir = app.getPath('userData')
 
@@ -24,15 +24,19 @@ function parseFirmUrl(category, city, key) {
 }
 
 
-class Parser {
+class Parser extends EventEmitter {
 	constructor() {
+		super()
 		this.pool = []
 		this.curCity
 		this.curTaskId
 		this.curIndex
 		this.ids
 		this.co
+		this.exportCo
+		this.exportIds
 		this.started = false
+		this.fd
 		this.licenseKey = this.getKey()
 	}
 
@@ -63,7 +67,7 @@ class Parser {
 	parseBase(msg, callback) {
 		var base = this.getFirstBase()
 		if (!base) {
-			msg({ type: "finish"})
+			msg({ type: "finish" })
 			callback()
 		} else {
 			var city = base.city
@@ -91,8 +95,8 @@ class Parser {
 	}
 
 	parseRubric(msg, callback) {
+		var rubricId = this.pool.shift()
 		if (this.started) {
-			var rubricId = this.pool.shift()
 			var url = parseFirmUrl(rubricId, this.curCity.id, this.licenseKey)
 			this.getJson(url, (e, r) => {
 				var c = 0
@@ -116,6 +120,7 @@ class Parser {
 				})
 			})
 		} else {
+			this.pool.unshift(rubricId)
 			this.pause()
 			callback()
 		}
@@ -263,14 +268,16 @@ class Parser {
 
 	saveBaseStatus(taskId, cityCode, status) {
 		var statusFile = dataDir + '/db/gis_' + taskId + '_' + cityCode + '/status.json'
-
 		fs.writeFileSync(statusFile, JSON.stringify(status))
 	}
 
 	setBaseFinished(taskId, cityCode) {
-		var status = this.getBaseStatus(taskId, cityCode)
-		status.count = this.co
-		status.finished = true
+		var status = {
+			finished: true,
+			count: this.co,
+			ids: {},
+			pool: []
+		}
 		this.saveBaseStatus(taskId, cityCode, status)
 	}
 
@@ -301,37 +308,78 @@ class Parser {
 		this.saveBaseStatus(taskId, cityCode, status)
 	}
 
-	export(tasks, fileName, callback) {
-		var co = 1
-		var header = `sep=;\n"id";"name";"city_name";"geometry_name";"post_code";"phone";"email";"website";"vkontakte";"instagram";"lon";"lat";"category";"subcategory"\n`
-		fs.appendFileSync(fileName, header);
+	appendTasks(tasks, callback) {
+		this.exportIds = []
+		var task = tasks.shift()
 
-		for(var i=0;i<tasks.length;i++){
-			var task = tasks[i]
-			var ids = []
-			for(var k=0;k<task.rubrics.length;k++){
-				var rubricFile = dataDir + '/db/' + task.dbname + '/' + task.rubrics[k] + '.json'
-				
-				var d = JSON.parse(fs.readFileSync(rubricFile))
+		if (!task) {
+			callback(null)
+		} else {
+			var status = this.getBaseStatus(task.taskId, task.city.code)
+			var rubrics = []
 
-				for (var n =0; n < d.length; n++){
-					var arr = d[n]
-
-					if (!ids.includes(arr[0])){
-						ids.push(arr[0])
-						var line = `"${co}";"${arr[1]}";"${arr[2]}";"${arr[3]}";"${arr[4]}";"${arr[5]}";"${arr[7]}";"${arr[8]}";"${arr[9]}";"${arr[10]}";"${arr[11]}";"${arr[12]}";"${arr[13]}";"${arr[14]}"\n`
-						fs.appendFileSync(fileName, iconv.encode(line, 'win1251'));
-						callback('msg', co)
-						co++
-					}
-
-
+			for(var i=0;i<task.rubrics.length;i++){
+				if(!status.pool.includes(task.rubrics[i])){
+					rubrics.push(task.rubrics[i])
 				}
-				
+			}
+
+			this.appendRubrics(task, rubrics, (e) => {
+				this.appendTasks(tasks, callback)
+			})
+		}
+	}
+
+	appendRubrics(task, rubrics, callback) {
+		var rubric = rubrics.shift()
+		if (!rubric) {
+			callback(null)
+		} else {
+			var rubricFile = dataDir + '/db/' + task.dbname + '/' + rubric + '.json'
+			fs.readFile(rubricFile, (e, data) => {
+				var d = JSON.parse(data)
+
+				this.appendLines(d, (e) => {
+					this.appendRubrics(task, rubrics, callback)
+				})
+			})
+		}
+	}
+
+	appendLines(d, callback) {
+		var arr = d.shift()
+
+		if (!arr) {
+			callback(null)
+		} else {
+			if (!this.exportIds.includes(arr[0])) {
+				this.exportIds.push(arr[0])
+				var line = `"${this.exportCo}";"${arr[1]}";"${arr[2]}";"${arr[3]}";"${arr[4]}";"${arr[5]}";"${arr[7]}";"${arr[8]}";"${arr[9]}";"${arr[10]}";"${arr[11]}";"${arr[12]}";"${arr[13]}";"${arr[14]}"\n`
+				fs.appendFile(this.fd, iconv.encode(line, 'win1251'), (e) => {
+					this.emit('msg', this.exportCo)
+					this.exportCo++
+
+					this.appendLines(d, callback)
+				})
+			} else {
+				this.appendLines(d, callback)
 			}
 		}
+	}
 
-		callback('finished', null)
+	export(tasks, fileName, callback) {
+		this.exportCo = 1
+		fs.open(fileName, 'a', (e, fd) => {
+			this.fd = fd
+			var header = `sep=;\n"id";"name";"city_name";"geometry_name";"post_code";"phone";"email";"website";"vkontakte";"instagram";"lon";"lat";"category";"subcategory"\n`
+			fs.appendFile(this.fd, header, (e) => {
+				this.appendTasks(tasks, (e) => {
+					fs.close(this.fd, (e)=>{
+						callback(null)
+					})
+				})
+			})
+		})
 	}
 
 	getKey() {
@@ -339,8 +387,8 @@ class Parser {
 	}
 
 	setKey(key, callback) {
-		this.getText('https://parselab.org/key/key3.php?key='+key+'&key_check', (e, r)=>{
-			if (r != '0'){
+		this.getText('https://parselab.org/key/key3.php?key=' + key + '&key_check', (e, r) => {
+			if (r != '0') {
 				this.licenseKey = key
 				fs.writeFileSync(dataDir + '/key.json', JSON.stringify(key))
 				callback(r)
