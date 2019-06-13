@@ -14,7 +14,7 @@ if (!fs.existsSync(dataDir + '/db')) fs.mkdirSync(dataDir + '/db')
 if (!fs.existsSync(dataDir + '/key.json')) fs.writeFileSync(dataDir + '/key.json', '"demo"')
 if (!fs.existsSync(dataDir + '/tasks.json')) fs.writeFileSync(dataDir + '/tasks.json', '{"tasks":[],"count":0}')
 
-var firmurl4 = 'http://db.parselab.org/4.0/[city]/[category].json?key=[key]'
+var firmurl4 = 'http://db.parselab.org/[city]/[category].json?key=[key]'
 
 function parseFirmUrl(category, city, key) {
 	return firmurl4

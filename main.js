@@ -1,30 +1,44 @@
 /* eslint-disable semi */
 var version = require('./version.json')
 
-if (process.argv.includes('-u')){
+if (process.argv.includes('-u')) {
 
 	console.log(r)
 	process.exit(0)
-	
+
 }
 
 const electron = require('electron');
-// Module to control application life.
+const { autoUpdater } = require("electron-updater")
+
+const isDev = require('electron-is-dev');
+
 const app = electron.app;
-// Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
+if (!process.argv.includes('-d')) electron.Menu.setApplicationMenu(null)
+
+
+
+autoUpdater.on('checking-for-update', () => {
+	console.log('Checking for update...');
+})
+autoUpdater.on('update-available', (ev, info) => {
+	console.log('Update available.');
+})
+autoUpdater.on('update-not-available', (ev, info) => {
+	console.log('Update not available.');
+})
+
+
 let mainWindow;
 
 function createWindow() {
-	// Create the browser window.
 	mainWindow = new BrowserWindow({
 		width: 850,
 		height: 600,
 		webPreferences: {
-			nodeIntegration: true		
+			nodeIntegration: true
 		},
 		backgroundColor: '#3498db',
 		show: true,
@@ -32,18 +46,11 @@ function createWindow() {
 		title: "Парсер 2Gis " + version
 	})
 
-	mainWindow.setMenu(null);
-	// and load the index.html of the app.
 	mainWindow.loadURL(`file://${__dirname}/index.html`)
 
-	// Open the DevTools.
 	if (process.argv.includes('-d')) mainWindow.webContents.openDevTools()
 
-	// Emitted when the window is closed.
 	mainWindow.on('closed', function () {
-		// Dereference the window object, usually you would store windows
-		// in an array if your app supports multi windows, this is the time
-		// when you should delete the corresponding element.
 		mainWindow = null;
 	});
 }
@@ -53,33 +60,20 @@ if (mainWindow) {
 	mainWindow.focus();
 }
 
-
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-
-//app.commandLine.appendSwitch('disable-gpu');
-
 app.on('ready', () => {
+	if (!isDev) autoUpdater.checkForUpdates();
 	createWindow();
 });
 
-// Quit when all windows are closed.
 app.on('window-all-closed', function () {
-	// On OS X it is common for applications and their menu bar
-	// to stay active until the user quits explicitly with Cmd + Q
 	if (process.platform !== 'darwin') {
 		app.quit();
 	}
 });
 
 app.on('activate', function () {
-	// On OS X it's common to re-create a window in the app when the
-	// dock icon is clicked and there are no other windows open.
+
 	if (mainWindow === null) {
 		createWindow();
 	}
 });
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

@@ -14,16 +14,20 @@ function getJson(url, callback) {
 			callback(e, null)
 		})
 }
+
 var keywin
 var remote = require('electron').remote
 global.app = remote.app
-//var app = remote.app
 var dialog = remote.require('electron').dialog
 var win = remote.getCurrentWindow()
 var shell = require('electron').shell
 var started = false
 var taskData = { cities: '', rubrics: '', name: '' }
-var dat
+var dat = {
+	countries: require(__dirname + '/dat/countries.json'),
+	cities: require(__dirname + '/dat/cities.json'),
+	categories: require(__dirname + '/dat/categories.json')
+}
 var currentVersion = JSON.parse(fs.readFileSync(__dirname + '/version.json'))
 
 var version
@@ -33,7 +37,7 @@ var property
 var parser = require(__dirname + '/parser4.js')
 
 function isDemo() {
-	if (parser.licenseKey == 'demo') return true
+	if (dat.user_id == '0') return true
 	else return false
 }
 
@@ -65,7 +69,6 @@ function getCityData() {
 
 	return countries
 }
-
 
 function getCityData2() {
 	var countries = []
@@ -129,9 +132,20 @@ function getCategoryData() {
 
 function loadDat(callback) {
 	var project = '32'
-	if (isDemo()) project = '69'
-	getJson('https://parselab.org/key/key3.php?project=' + project + '&key=' + parser.licenseKey, (e, r) => {
-		dat = r
+	getJson('https://parselab.org/key/key3.php?project=' + project + '&key=' + parser.licenseKey + '&min', (e, r) => {
+		for(var i in r){
+			dat[i] = r[i]
+		}
+
+		if (isDemo()){
+			dat.countries = {ru: dat.countries.ru}
+			for(var i = 0;i<dat.cities.length;i++){
+				if(dat.cities[i].id == '69') {
+					dat.cities = [dat.cities[i]]
+				}
+			}
+		}
+
 		version = {
 			last: dat.last_version,
 			current: currentVersion,
@@ -141,34 +155,8 @@ function loadDat(callback) {
 	})
 }
 
-function checkNewVersion(version) {
-	var current = version.current.split('.')
-	var last = version.last.split('.')
-
-	for (var i = 0; i < current.length; i++) {
-		if (last[i] > current[i]) return true
-		else if (last[i] == current[i]) continue
-		else return false
-	}
-
-	return false
-}
-
 webix.ready(function () {
 	loadDat(() => {
-		if (checkNewVersion(version)) {
-			webix.modalbox({
-				title: "Доступна новая версия!",
-				buttons: ["Да, скачать!", "Нет, спасибо"],
-				width: "500px",
-				text: "Доступна более новая версия парсера! Ваша версия: " + version.current + ". Последняя версия: " + version.last + ". Желаете скачать последнюю версию?",
-				callback: function (result) {
-					if (result == 0) {
-						shell.openExternal('https://parselab.org/parser-2gis.html')
-					}
-				}
-			})
-		}
 		interface_init()
 		reloadBases()
 		if (isDemo()) {
@@ -197,7 +185,6 @@ function interface_init() {
 		move: true,
 		modal: true,
 		height: 600,
-		//width:500,
 		resize: true,
 		position: "center",
 		head: {
@@ -248,7 +235,7 @@ function interface_init() {
 				{
 					margin: 5, cols: [
 						{ view: "button", value: "Отмена", click: "$$('propertywin').hide();" },
-						{ view: "button", value: "Сохранить", click: setProperty, type: "form" }
+						{ view: "button", value: "Сохранить", type: "form" }
 					]
 				},
 			]
@@ -286,10 +273,10 @@ function interface_init() {
 		rows: [
 			{
 				view: "toolbar", cols: [
-					{ view: "button", id: "basebutton", type: "iconButton", icon: "plus-circle", label: "Создать базы", autowidth: true, click: selectCity, align: "left" },
-					{ view: "button", hidden: false, id: "ctlbutton", disabled: true, type: "iconButton", icon: "play", label: "Старт", autowidth: true, click: startParsing, tooltip: "Запуск парсинга" },
+					{ view: "button", id: "basebutton", type: "iconButton", icon: "fas fa-plus-circle", label: "Создать базы", autowidth: true, click: selectCity, align: "left" },
+					{ view: "button", hidden: false, id: "ctlbutton", disabled: true, type: "iconButton", icon: "fas fa-play", label: "Старт", autowidth: true, click: startParsing, tooltip: "Запуск парсинга" },
 					{ gravity: 4 },
-					{ view: "button", hidden: true, id: "reloadbutton", type: "iconButton", tooltip: "Обновить", icon: "refresh", width: 36, click: reloadBases, align: "right" },
+					{ view: "button", hidden: true, id: "reloadbutton", type: "iconButton", tooltip: "Обновить", icon: "fas fa-refresh", width: 36, click: reloadBases, align: "right" },
 					{
 						view: "select",
 						id: "threads",
@@ -297,7 +284,6 @@ function interface_init() {
 						labelWidth: 150,
 						width: 200,
 						hidden: true,
-						//inputWidth: 50,
 						value: 1,
 						options: [
 							{ id: 1, value: "1" }, { id: 2, value: "2" }, { id: 3, value: "3" },
@@ -328,10 +314,10 @@ function interface_init() {
 			},
 			{
 				view: "toolbar", cols: [
-					{ view: "button", type: "iconButton", icon: "download", label: "Выгрузить выделенные", autowidth: true, id: "exportbutton", click: exportBases, align: "left", tooltip: "Выгрузить выделенные базы" },
-					{ view: "button", type: "iconButton", icon: "remove", label: "Удалить выделенные", autowidth: true, id: "deletebutton", click: deleteBases, align: "left", tooltip: "Удалить выделенные базы" },
+					{ view: "button", type: "iconButton", icon: "fas fa-download", label: "Выгрузить выделенные", autowidth: true, id: "exportbutton", click: exportBases, align: "left", tooltip: "Выгрузить выделенные базы" },
+					{ view: "button", type: "iconButton", icon: "fas fa-trash", label: "Удалить выделенные", autowidth: true, id: "deletebutton", click: deleteBases, align: "left", tooltip: "Удалить выделенные базы" },
 					{ gravity: 4 },
-					{ view: "button", type: "iconButton", icon: "cog", label: "Настройки", autowidth: true, id: "propertybutton", click: showProperty, align: "right", tooltip: "Настройки", disabled: true }
+					{ view: "button", hidden: true, type: "iconButton", icon: "fas fa-cog", label: "Настройки", autowidth: true, id: "propertybutton", align: "right", tooltip: "Настройки", disabled: true }
 				]
 			},
 		]
@@ -366,14 +352,6 @@ function interface_init() {
 			this.hide()
 		}
 	})
-}
-
-function loadProperty(callback) {
-
-}
-
-function setProperty() {
-
 }
 
 function selectTask() {
@@ -432,7 +410,6 @@ function reloadBases() {
 				$$('deletebutton').enable()
 				$$('exportbutton').enable()
 				$$('threads').enable()
-				//$$('propertybutton').enable()
 			}
 		}
 		else {
@@ -440,7 +417,6 @@ function reloadBases() {
 			$$('deletebutton').disable()
 			$$('exportbutton').disable()
 			$$('threads').disable()
-			//$$('propertybutton').disable()
 		}
 	}
 
@@ -450,13 +426,6 @@ function reloadBases() {
 
 function uncheckMaster() {
 	$$("basestable").getHeaderContent("mc1").uncheck()
-}
-
-function showProperty() {
-	loadProperty(function () {
-		$$("sets").setValues(JSON.parse(property))
-		$$("propertywin").show()
-	})
 }
 
 function esc() {
@@ -543,10 +512,6 @@ function getSelectedRubrics() {
 	var categories = root[0].data
 	var res = []
 
-	/* 	if (root[0].checked) {
-			return res
-		}
-	 */
 	for (var i = 0; i < categories.length; i++) {
 		for (var k = 0; k < categories[i].data.length; k++) {
 			if (categories[i].data[k].checked) {
@@ -675,7 +640,7 @@ function startParsing2() {
 	$$('exportbutton').disable()
 	$$('propertybutton').disable()
 
-	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "stop", label: "Стоп", autowidth: true, click: stopParsing, tooltip: "Остановка парсинга" }, $$('ctlbutton'))
+	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "fas fa-stop", label: "Стоп", autowidth: true, click: stopParsing, tooltip: "Остановка парсинга" }, $$('ctlbutton'))
 
 	gis.parseBases($$('threads').getValue(), function (res, type) {
 		if (type == 'msg') {
@@ -697,15 +662,13 @@ function startParsing2() {
 	})
 }
 
-
-
 function startParsing() {
 	started = true
 	$$('threads').disable()
 	$$('deletebutton').disable()
 	$$('exportbutton').disable()
 	$$('propertybutton').disable()
-	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "stop", label: "Стоп", autowidth: true, click: stopParsing, tooltip: "Остановка парсинга" }, $$('ctlbutton'))
+	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "fas fa-stop", label: "Стоп", autowidth: true, click: stopParsing, tooltip: "Остановка парсинга" }, $$('ctlbutton'))
 	parser.start((r) => {
 		var id = $$('basestable').getIdByIndex(parser.curIndex)
 		var record = $$('basestable').getItem(id)
@@ -723,27 +686,20 @@ function startParsing() {
 	}, () => {
 		stopParsing()
 	})
-	//$$('basestable').updateItem(id, record)
-
 }
 
 function loadDemo() {
 
 	keywin.close()
-	//$$('keywin').hide();
-	//win.reload()
 }
 
 function stopParsing() {
 	started = false
 	parser.stop()
 
-	//gis.stopChilds()
 	$$('threads').enable()
 	$$('deletebutton').enable()
 	$$('exportbutton').enable()
-	$$('propertybutton').enable()
-	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "play", label: "Старт", autowidth: true, click: startParsing, tooltip: "Запуск парсинга" }, $$('ctlbutton'))
-
+	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "fas fa-play", label: "Старт", autowidth: true, click: startParsing, tooltip: "Запуск парсинга" }, $$('ctlbutton'))
 }
 

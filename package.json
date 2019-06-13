@@ -1,23 +1,30 @@
 {
   "name": "parser2gis4",
-  "version": "3.1.0",
+  "version": "4.0.4",
   "description": "Parser 2Gis",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "start2": "electron bottest.js",
-    "build": "electron-builder . --win --dir",
-    "publish": "node publish.js"
+    "build": "electron-builder . --win --ia32 --x64"
   },
   "build": {
-    "appId": "com.parselab.parser2gis4",
-    "asar": true
+    "appId": "{9A452D88-9CC1-493A-AA46-8B33FFD4A641}",
+    "productName": "Парсер 2Gis",
+    "asar": true,
+    "publish": {
+      "provider": "generic",
+      "url": "https://parselab.org/dist",
+      "channel": "latest"
+    },
+    "nsis": {
+      "artifactName": "parser2gis${version}.${ext}"
+    }
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/electron/electron-quick-start.git"
   },
-  "author": "GitHub",
+  "author": "ParseLab",
   "license": "CC0-1.0",
   "bugs": {
     "url": "https://github.com/electron/electron-quick-start/issues"
@@ -25,12 +32,14 @@
   "homepage": "https://github.com/electron/electron-quick-start#readme",
   "devDependencies": {
     "electron": "*",
-    "electron-builder": "*",
-    "electron-winstaller": "*"
+    "electron-builder": "*"
   },
   "dependencies": {
     "bluebird": "*",
+    "electron-is-dev": "*",
+    "electron-updater": "^4.*",
     "iconv-lite": "*",
-    "node-fetch": "*"
+    "node-fetch": "*",
+    "webix": "^3.4.*"
   }
 }

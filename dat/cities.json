@@ -1,0 +1,926 @@
+[
+    {
+        "id": "173",
+        "name": "Cyprus",
+        "code": "cyprus",
+        "country": "cy"
+    },
+    {
+        "id": "92",
+        "name": "Praha",
+        "code": "praha",
+        "country": "cz"
+    },
+    {
+        "id": "101",
+        "name": "Santiago",
+        "code": "santiago",
+        "country": "cl"
+    },
+    {
+        "id": "99",
+        "name": "UAE",
+        "code": "dubai",
+        "country": "ae"
+    },
+    {
+        "id": "66",
+        "name": "Venezia e Padova",
+        "code": "padova",
+        "country": "it"
+    },
+    {
+        "id": "69",
+        "name": "Абакан",
+        "code": "abakan",
+        "country": "ru"
+    },
+    {
+        "id": "196",
+        "name": "Актау",
+        "code": "aktau",
+        "country": "kz"
+    },
+    {
+        "id": "167",
+        "name": "Актобе",
+        "code": "aktobe",
+        "country": "kz"
+    },
+    {
+        "id": "67",
+        "name": "Алматы",
+        "code": "almaty",
+        "country": "kz"
+    },
+    {
+        "id": "108",
+        "name": "Альметьевск",
+        "code": "almetevsk",
+        "country": "ru"
+    },
+    {
+        "id": "155",
+        "name": "Анадырь",
+        "code": "anadyr",
+        "country": "ru"
+    },
+    {
+        "id": "106",
+        "name": "Армавир",
+        "code": "armawir",
+        "country": "ru"
+    },
+    {
+        "id": "49",
+        "name": "Архангельск",
+        "code": "arkhangelsk",
+        "country": "ru"
+    },
+    {
+        "id": "68",
+        "name": "Астана",
+        "code": "astana",
+        "country": "kz"
+    },
+    {
+        "id": "8",
+        "name": "Астрахань",
+        "code": "astrakhan",
+        "country": "ru"
+    },
+    {
+        "id": "168",
+        "name": "Атырау",
+        "code": "atyrau",
+        "country": "kz"
+    },
+    {
+        "id": "121",
+        "name": "Балаково",
+        "code": "balakovo",
+        "country": "ru"
+    },
+    {
+        "id": "4",
+        "name": "Барнаул",
+        "code": "barnaul",
+        "country": "ru"
+    },
+    {
+        "id": "46",
+        "name": "Белгород",
+        "code": "belgorod",
+        "country": "ru"
+    },
+    {
+        "id": "20",
+        "name": "Бийск",
+        "code": "biysk",
+        "country": "ru"
+    },
+    {
+        "id": "157",
+        "name": "Биробиджан",
+        "code": "birobidzhan",
+        "country": "ru"
+    },
+    {
+        "id": "112",
+        "name": "Бишкек",
+        "code": "bishkek",
+        "country": "kg"
+    },
+    {
+        "id": "52",
+        "name": "Благовещенск",
+        "code": "blagoveshensk",
+        "country": "ru"
+    },
+    {
+        "id": "51",
+        "name": "Братск",
+        "code": "bratsk",
+        "country": "ru"
+    },
+    {
+        "id": "62",
+        "name": "Брянск",
+        "code": "bryansk",
+        "country": "ru"
+    },
+    {
+        "id": "77",
+        "name": "Великий Новгород",
+        "code": "v_novgorod",
+        "country": "ru"
+    },
+    {
+        "id": "25",
+        "name": "Владивосток",
+        "code": "vladivostok",
+        "country": "ru"
+    },
+    {
+        "id": "114",
+        "name": "Владикавказ",
+        "code": "vladikavkaz",
+        "country": "ru"
+    },
+    {
+        "id": "59",
+        "name": "Владимир",
+        "code": "vladimir",
+        "country": "ru"
+    },
+    {
+        "id": "33",
+        "name": "Волгоград",
+        "code": "volgograd",
+        "country": "ru"
+    },
+    {
+        "id": "122",
+        "name": "Волгодонск",
+        "code": "volgodonsk",
+        "country": "ru"
+    },
+    {
+        "id": "78",
+        "name": "Вологда",
+        "code": "vologda",
+        "country": "ru"
+    },
+    {
+        "id": "31",
+        "name": "Воронеж",
+        "code": "voronezh",
+        "country": "ru"
+    },
+    {
+        "id": "115",
+        "name": "Грозный",
+        "code": "grozny",
+        "country": "ru"
+    },
+    {
+        "id": "123",
+        "name": "Дербент",
+        "code": "derbent",
+        "country": "ru"
+    },
+    {
+        "id": "124",
+        "name": "Димитровград",
+        "code": "dimitrovgrad",
+        "country": "ru"
+    },
+    {
+        "id": "105",
+        "name": "Днепр",
+        "code": "dnepropetrovsk",
+        "country": "ua"
+    },
+    {
+        "id": "9",
+        "name": "Екатеринбург",
+        "code": "ekaterinburg",
+        "country": "ru"
+    },
+    {
+        "id": "126",
+        "name": "Елец",
+        "code": "elets",
+        "country": "ru"
+    },
+    {
+        "id": "65",
+        "name": "Иваново",
+        "code": "ivanovo",
+        "country": "ru"
+    },
+    {
+        "id": "41",
+        "name": "Ижевск",
+        "code": "izhevsk",
+        "country": "ru"
+    },
+    {
+        "id": "11",
+        "name": "Иркутск",
+        "code": "irkutsk",
+        "country": "ru"
+    },
+    {
+        "id": "205",
+        "name": "Ишим",
+        "code": "ishim",
+        "country": "ru"
+    },
+    {
+        "id": "70",
+        "name": "Йошкар-Ола",
+        "code": "yoshkarola",
+        "country": "ru"
+    },
+    {
+        "id": "89",
+        "name": "Кавказские Минеральные Воды",
+        "code": "minvody",
+        "country": "ru"
+    },
+    {
+        "id": "21",
+        "name": "Казань",
+        "code": "kazan",
+        "country": "ru"
+    },
+    {
+        "id": "40",
+        "name": "Калининград",
+        "code": "kaliningrad",
+        "country": "ru"
+    },
+    {
+        "id": "61",
+        "name": "Калуга",
+        "code": "kaluga",
+        "country": "ru"
+    },
+    {
+        "id": "109",
+        "name": "Каменск-Уральский",
+        "code": "k_uralskiy",
+        "country": "ru"
+    },
+    {
+        "id": "127",
+        "name": "Камышин",
+        "code": "kamyshin",
+        "country": "ru"
+    },
+    {
+        "id": "84",
+        "name": "Караганда",
+        "code": "karaganda",
+        "country": "kz"
+    },
+    {
+        "id": "5",
+        "name": "Кемерово",
+        "code": "kemerovo",
+        "country": "ru"
+    },
+    {
+        "id": "58",
+        "name": "Киров",
+        "code": "kirov",
+        "country": "ru"
+    },
+    {
+        "id": "107",
+        "name": "Киев",
+        "code": "kiev",
+        "country": "ua"
+    },
+    {
+        "id": "129",
+        "name": "Ковров",
+        "code": "kovrov",
+        "country": "ru"
+    },
+    {
+        "id": "207",
+        "name": "Когалым",
+        "code": "kogalym",
+        "country": "ru"
+    },
+    {
+        "id": "201",
+        "name": "Кокшетау",
+        "code": "kokshetau",
+        "country": "kz"
+    },
+    {
+        "id": "94",
+        "name": "Комсомольск-на-Амуре",
+        "code": "komsomolsk",
+        "country": "ru"
+    },
+    {
+        "id": "34",
+        "name": "Кострома",
+        "code": "kostroma",
+        "country": "ru"
+    },
+    {
+        "id": "23",
+        "name": "Краснодар",
+        "code": "krasnodar",
+        "country": "ru"
+    },
+    {
+        "id": "7",
+        "name": "Красноярск",
+        "code": "krasnoyarsk",
+        "country": "ru"
+    },
+    {
+        "id": "10",
+        "name": "Курган",
+        "code": "kurgan",
+        "country": "ru"
+    },
+    {
+        "id": "73",
+        "name": "Курск",
+        "code": "kursk",
+        "country": "ru"
+    },
+    {
+        "id": "130",
+        "name": "Кызыл",
+        "code": "kyzyl",
+        "country": "ru"
+    },
+    {
+        "id": "86",
+        "name": "Ленинск-Кузнецкий",
+        "code": "lenkuz",
+        "country": "ru"
+    },
+    {
+        "id": "56",
+        "name": "Липецк",
+        "code": "lipetsk",
+        "country": "ru"
+    },
+    {
+        "id": "158",
+        "name": "Магадан",
+        "code": "magadan",
+        "country": "ru"
+    },
+    {
+        "id": "26",
+        "name": "Магнитогорск",
+        "code": "magnitogorsk",
+        "country": "ru"
+    },
+    {
+        "id": "113",
+        "name": "Махачкала",
+        "code": "makhachkala",
+        "country": "ru"
+    },
+    {
+        "id": "87",
+        "name": "Миасс и Златоуст",
+        "code": "miass",
+        "country": "ru"
+    },
+    {
+        "id": "32",
+        "name": "Москва",
+        "code": "moscow",
+        "country": "ru"
+    },
+    {
+        "id": "96",
+        "name": "Мурманск",
+        "code": "murmansk",
+        "country": "ru"
+    },
+    {
+        "id": "132",
+        "name": "Муром",
+        "code": "murom",
+        "country": "ru"
+    },
+    {
+        "id": "29",
+        "name": "Набережные Челны",
+        "code": "nabchelny",
+        "country": "ru"
+    },
+    {
+        "id": "154",
+        "name": "Назрань",
+        "code": "nazran",
+        "country": "ru"
+    },
+    {
+        "id": "134",
+        "name": "Нальчик",
+        "code": "nalchik",
+        "country": "ru"
+    },
+    {
+        "id": "159",
+        "name": "Нарьян-Мар",
+        "code": "naryanmar",
+        "country": "ru"
+    },
+    {
+        "id": "82",
+        "name": "Находка",
+        "code": "nahodka",
+        "country": "ru"
+    },
+    {
+        "id": "135",
+        "name": "Невинномысск",
+        "code": "nevinnomyssk",
+        "country": "ru"
+    },
+    {
+        "id": "136",
+        "name": "Нефтекамск",
+        "code": "neftekamsk",
+        "country": "ru"
+    },
+    {
+        "id": "12",
+        "name": "Нижневартовск",
+        "code": "nizhnevartovsk",
+        "country": "ru"
+    },
+    {
+        "id": "19",
+        "name": "Нижний Новгород",
+        "code": "n_novgorod",
+        "country": "ru"
+    },
+    {
+        "id": "45",
+        "name": "Нижний Тагил",
+        "code": "ntagil",
+        "country": "ru"
+    },
+    {
+        "id": "6",
+        "name": "Новокузнецк",
+        "code": "novokuznetsk",
+        "country": "ru"
+    },
+    {
+        "id": "74",
+        "name": "Новороссийск",
+        "code": "novorossiysk",
+        "country": "ru"
+    },
+    {
+        "id": "1",
+        "name": "Новосибирск",
+        "code": "novosibirsk",
+        "country": "ru"
+    },
+    {
+        "id": "137",
+        "name": "Новочеркасск",
+        "code": "novocherkassk",
+        "country": "ru"
+    },
+    {
+        "id": "138",
+        "name": "Новошахтинск",
+        "code": "novoshakhtinsk",
+        "country": "ru"
+    },
+    {
+        "id": "139",
+        "name": "Новый Уренгой",
+        "code": "n_urengoy",
+        "country": "ru"
+    },
+    {
+        "id": "76",
+        "name": "Норильск",
+        "code": "norilsk",
+        "country": "ru"
+    },
+    {
+        "id": "103",
+        "name": "Ноябрьск",
+        "code": "noyabrsk",
+        "country": "ru"
+    },
+    {
+        "id": "202",
+        "name": "Нягань",
+        "code": "nyagan",
+        "country": "ru"
+    },
+    {
+        "id": "140",
+        "name": "Обнинск",
+        "code": "obninsk",
+        "country": "ru"
+    },
+    {
+        "id": "14",
+        "name": "Одесса",
+        "code": "odessa",
+        "country": "ua"
+    },
+    {
+        "id": "2",
+        "name": "Омск",
+        "code": "omsk",
+        "country": "ru"
+    },
+    {
+        "id": "48",
+        "name": "Оренбург",
+        "code": "orenburg",
+        "country": "ru"
+    },
+    {
+        "id": "142",
+        "name": "Орск",
+        "code": "orsk",
+        "country": "ru"
+    },
+    {
+        "id": "71",
+        "name": "Орёл",
+        "code": "orel",
+        "country": "ru"
+    },
+    {
+        "id": "171",
+        "name": "Ош",
+        "code": "osh",
+        "country": "kg"
+    },
+    {
+        "id": "111",
+        "name": "Павлодар",
+        "code": "pavlodar",
+        "country": "kz"
+    },
+    {
+        "id": "42",
+        "name": "Пенза",
+        "code": "penza",
+        "country": "ru"
+    },
+    {
+        "id": "16",
+        "name": "Пермь",
+        "code": "perm",
+        "country": "ru"
+    },
+    {
+        "id": "80",
+        "name": "Петрозаводск",
+        "code": "petrozavodsk",
+        "country": "ru"
+    },
+    {
+        "id": "95",
+        "name": "Петропавловск-Камчатский",
+        "code": "p_kamchatskiy",
+        "country": "ru"
+    },
+    {
+        "id": "90",
+        "name": "Псков",
+        "code": "pskov",
+        "country": "ru"
+    },
+    {
+        "id": "27",
+        "name": "Республика Алтай",
+        "code": "gornoaltaysk",
+        "country": "ru"
+    },
+    {
+        "id": "24",
+        "name": "Ростов-на-Дону",
+        "code": "rostov",
+        "country": "ru"
+    },
+    {
+        "id": "143",
+        "name": "Рубцовск",
+        "code": "rubtsovsk",
+        "country": "ru"
+    },
+    {
+        "id": "144",
+        "name": "Рыбинск",
+        "code": "rybinsk",
+        "country": "ru"
+    },
+    {
+        "id": "44",
+        "name": "Рязань",
+        "code": "ryazan",
+        "country": "ru"
+    },
+    {
+        "id": "160",
+        "name": "Салехард",
+        "code": "salekhard",
+        "country": "ru"
+    },
+    {
+        "id": "18",
+        "name": "Самара",
+        "code": "samara",
+        "country": "ru"
+    },
+    {
+        "id": "38",
+        "name": "Санкт-Петербург",
+        "code": "spb",
+        "country": "ru"
+    },
+    {
+        "id": "85",
+        "name": "Саранск",
+        "code": "saransk",
+        "country": "ru"
+    },
+    {
+        "id": "43",
+        "name": "Саратов",
+        "code": "saratov",
+        "country": "ru"
+    },
+    {
+        "id": "146",
+        "name": "Сергиев Посад",
+        "code": "s_posad",
+        "country": "ru"
+    },
+    {
+        "id": "147",
+        "name": "Серпухов",
+        "code": "serpuhov",
+        "country": "ru"
+    },
+    {
+        "id": "63",
+        "name": "Смоленск",
+        "code": "smolensk",
+        "country": "ru"
+    },
+    {
+        "id": "30",
+        "name": "Сочи",
+        "code": "sochi",
+        "country": "ru"
+    },
+    {
+        "id": "57",
+        "name": "Ставрополь",
+        "code": "stavropol",
+        "country": "ru"
+    },
+    {
+        "id": "60",
+        "name": "Старый Оскол",
+        "code": "staroskol",
+        "country": "ru"
+    },
+    {
+        "id": "54",
+        "name": "Стерлитамак",
+        "code": "sterlitamak",
+        "country": "ru"
+    },
+    {
+        "id": "39",
+        "name": "Сургут",
+        "code": "surgut",
+        "country": "ru"
+    },
+    {
+        "id": "72",
+        "name": "Сыктывкар",
+        "code": "syktyvkar",
+        "country": "ru"
+    },
+    {
+        "id": "116",
+        "name": "Таганрог",
+        "code": "taganrog",
+        "country": "ru"
+    },
+    {
+        "id": "81",
+        "name": "Тамбов",
+        "code": "tambov",
+        "country": "ru"
+    },
+    {
+        "id": "47",
+        "name": "Тверь",
+        "code": "tver",
+        "country": "ru"
+    },
+    {
+        "id": "97",
+        "name": "Тобольск",
+        "code": "tobolsk",
+        "country": "ru"
+    },
+    {
+        "id": "22",
+        "name": "Тольятти",
+        "code": "togliatti",
+        "country": "ru"
+    },
+    {
+        "id": "3",
+        "name": "Томск",
+        "code": "tomsk",
+        "country": "ru"
+    },
+    {
+        "id": "36",
+        "name": "Тула",
+        "code": "tula",
+        "country": "ru"
+    },
+    {
+        "id": "13",
+        "name": "Тюмень",
+        "code": "tyumen",
+        "country": "ru"
+    },
+    {
+        "id": "37",
+        "name": "Улан-Удэ",
+        "code": "ulanude",
+        "country": "ru"
+    },
+    {
+        "id": "55",
+        "name": "Ульяновск",
+        "code": "ulyanovsk",
+        "country": "ru"
+    },
+    {
+        "id": "162",
+        "name": "Уральск",
+        "code": "uralsk",
+        "country": "kz"
+    },
+    {
+        "id": "83",
+        "name": "Уссурийск",
+        "code": "ussuriysk",
+        "country": "ru"
+    },
+    {
+        "id": "91",
+        "name": "Усть-Каменогорск",
+        "code": "ustkam",
+        "country": "kz"
+    },
+    {
+        "id": "17",
+        "name": "Уфа",
+        "code": "ufa",
+        "country": "ru"
+    },
+    {
+        "id": "204",
+        "name": "Ухта",
+        "code": "ukhta",
+        "country": "ru"
+    },
+    {
+        "id": "35",
+        "name": "Хабаровск",
+        "code": "khabarovsk",
+        "country": "ru"
+    },
+    {
+        "id": "150",
+        "name": "Ханты-Мансийск",
+        "code": "kh_mansiysk",
+        "country": "ru"
+    },
+    {
+        "id": "110",
+        "name": "Харьков",
+        "code": "kharkov",
+        "country": "ua"
+    },
+    {
+        "id": "151",
+        "name": "Хасавюрт",
+        "code": "khasavyurt",
+        "country": "ru"
+    },
+    {
+        "id": "53",
+        "name": "Чебоксары",
+        "code": "cheboksary",
+        "country": "ru"
+    },
+    {
+        "id": "15",
+        "name": "Челябинск",
+        "code": "chelyabinsk",
+        "country": "ru"
+    },
+    {
+        "id": "118",
+        "name": "Черкесск",
+        "code": "cherkessk",
+        "country": "ru"
+    },
+    {
+        "id": "64",
+        "name": "Чита",
+        "code": "chita",
+        "country": "ru"
+    },
+    {
+        "id": "152",
+        "name": "Шахты",
+        "code": "shakhty",
+        "country": "ru"
+    },
+    {
+        "id": "206",
+        "name": "Шерегеш",
+        "code": "sheregesh",
+        "country": "ru"
+    },
+    {
+        "id": "161",
+        "name": "Шымкент",
+        "code": "shymkent",
+        "country": "kz"
+    },
+    {
+        "id": "153",
+        "name": "Элиста",
+        "code": "elista",
+        "country": "ru"
+    },
+    {
+        "id": "88",
+        "name": "Южно-Сахалинск",
+        "code": "yuzhnosakhalinsk",
+        "country": "ru"
+    },
+    {
+        "id": "50",
+        "name": "Якутск",
+        "code": "yakutsk",
+        "country": "ru"
+    },
+    {
+        "id": "28",
+        "name": "Ярославль",
+        "code": "yaroslavl",
+        "country": "ru"
+    }
+]
