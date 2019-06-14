@@ -131,9 +131,10 @@ class Parser extends EventEmitter {
 	}
 
 	getJson(url, callback) {
-		fetch(url, {headers: this.headers})
+		fetch(url, { headers: this.headers })
 			.then(res => res.json())
 			.then(r => {
+				console.log(r)
 				callback(null, r)
 			})
 			.catch(e => {
@@ -142,9 +143,10 @@ class Parser extends EventEmitter {
 	}
 
 	getText(url, callback) {
-		fetch(url, {headers: this.headers})
+		fetch(url, { headers: this.headers })
 			.then(res => res.text())
 			.then(r => {
+				console.log(r)
 				callback(null, r)
 			})
 			.catch(e => {
@@ -322,8 +324,8 @@ class Parser extends EventEmitter {
 			var status = this.getBaseStatus(task.taskId, task.city.code)
 			var rubrics = []
 
-			for(var i=0;i<task.rubrics.length;i++){
-				if(!status.pool.includes(task.rubrics[i])){
+			for (var i = 0; i < task.rubrics.length; i++) {
+				if (!status.pool.includes(task.rubrics[i])) {
 					rubrics.push(task.rubrics[i])
 				}
 			}
@@ -378,7 +380,7 @@ class Parser extends EventEmitter {
 			var header = `sep=;\n"id";"name";"city_name";"geometry_name";"post_code";"phone";"email";"website";"vkontakte";"instagram";"lon";"lat";"category";"subcategory"\n`
 			fs.appendFile(this.fd, header, (e) => {
 				this.appendTasks(tasks, (e) => {
-					fs.close(this.fd, (e)=>{
+					fs.close(this.fd, (e) => {
 						callback(null)
 					})
 				})
