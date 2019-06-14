@@ -8,6 +8,7 @@ var iconv = require('iconv-lite');
 const EventEmitter = require('events');
 fetch.Promise = Promise
 var dataDir = app.getPath('userData')
+var currentVersion = JSON.parse(fs.readFileSync(__dirname + '/version.json'))
 
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir)
 if (!fs.existsSync(dataDir + '/db')) fs.mkdirSync(dataDir + '/db')
@@ -38,6 +39,9 @@ class Parser extends EventEmitter {
 		this.started = false
 		this.fd
 		this.licenseKey = this.getKey()
+		this.headers = {
+			'User-Agent': 'Parser2Gis/' + currentVersion
+		}
 	}
 
 	init() {
@@ -127,7 +131,7 @@ class Parser extends EventEmitter {
 	}
 
 	getJson(url, callback) {
-		fetch(url)
+		fetch(url, {headers: this.headers})
 			.then(res => res.json())
 			.then(r => {
 				callback(null, r)
@@ -138,7 +142,7 @@ class Parser extends EventEmitter {
 	}
 
 	getText(url, callback) {
-		fetch(url)
+		fetch(url, {headers: this.headers})
 			.then(res => res.text())
 			.then(r => {
 				callback(null, r)

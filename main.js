@@ -1,24 +1,13 @@
 /* eslint-disable semi */
 var version = require('./version.json')
 
-if (process.argv.includes('-u')) {
-
-	console.log(r)
-	process.exit(0)
-
-}
-
 const electron = require('electron');
 const { autoUpdater } = require("electron-updater")
-
-
-const isDev = require('electron-is-dev');
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
 if (!process.argv.includes('-d')) electron.Menu.setApplicationMenu(null)
-
 
 let mainWindow;
 

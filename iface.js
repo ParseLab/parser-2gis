@@ -28,7 +28,6 @@ var dat = {
 	cities: require(__dirname + '/dat/cities.json'),
 	categories: require(__dirname + '/dat/categories.json')
 }
-var currentVersion = JSON.parse(fs.readFileSync(__dirname + '/version.json'))
 
 var version
 
@@ -37,7 +36,7 @@ var property
 var parser = require(__dirname + '/parser4.js')
 
 function isDemo() {
-	if (dat.user_id == '0') return true
+	if (!dat.user) return true
 	else return false
 }
 
@@ -100,31 +99,32 @@ function getCategoryData() {
 
 function loadDat(callback) {
 	var project = '32'
-	getJson('https://parselab.org/key/key3.php?project=' + project + '&key=' + parser.licenseKey + '&min', (e, r) => {
+	getJson('https://parselab.org/key/key3.php?project=' + project + '&key=' + parser.licenseKey + '&key_user', (e, r) => {
+		if (!r.error) dat.user = r
 
-		dat.user_id = r
-		if (isDemo()){
-			dat.countries = {ru: dat.countries.ru}
-			for(var i = 0;i<dat.cities.length;i++){
-				if(dat.cities[i].id == '69') {
+		if (isDemo()) {
+			dat.countries = { ru: dat.countries.ru }
+			for (var i = 0; i < dat.cities.length; i++) {
+				if (dat.cities[i].id == '69') {
 					dat.cities = [dat.cities[i]]
 				}
 			}
+		} 
+/* 		else {
+			$$("profile").define("label", r.email);
+			$$("profile").refresh();
+			
 		}
-
-		version = {
-			last: dat.last_version,
-			current: currentVersion,
-			url: dat.downloadUrl
-		}
+ */
 		callback()
 	})
 }
 
 
 exports.start = () => {
+	interface_init()
 	loadDat(() => {
-		interface_init()
+
 		reloadBases()
 		if (isDemo()) {
 			$$('keywin').show()
@@ -199,7 +199,7 @@ function interface_init() {
 		body: {
 			rows: [
 				{
-					view: "property", id: "sets", nameWidth: 250, disabled: (dat.user_id == '0') ? true : false,
+					view: "property", id: "sets", nameWidth: 250, disabled: (dat.user) ? true : false,
 					elements: [
 						{ label: "Собирать адреса e-mail с сайтов", type: "checkbox", id: "parse_emails", checkValue: true, uncheckValue: false }
 
@@ -242,6 +242,7 @@ function interface_init() {
 		}
 	})
 
+
 	webix.ui({
 		rows: [
 			{
@@ -250,25 +251,7 @@ function interface_init() {
 					{ view: "button", hidden: false, id: "ctlbutton", disabled: true, type: "iconButton", icon: "fas fa-play", label: "Старт", autowidth: true, click: startParsing, tooltip: "Запуск парсинга" },
 					{ gravity: 4 },
 					{ view: "button", hidden: true, id: "reloadbutton", type: "iconButton", tooltip: "Обновить", icon: "fas fa-refresh", width: 36, click: reloadBases, align: "right" },
-					{
-						view: "select",
-						id: "threads",
-						label: "Количество потоков",
-						labelWidth: 150,
-						width: 200,
-						hidden: true,
-						value: 1,
-						options: [
-							{ id: 1, value: "1" }, { id: 2, value: "2" }, { id: 3, value: "3" },
-							{ id: 4, value: "4" }, { id: 5, value: "5" }, { id: 6, value: "6" },
-							{ id: 7, value: "7" }, { id: 8, value: "8" }, { id: 9, value: "9" },
-							{ id: 10, value: "10" }, { id: 11, value: "11" }, { id: 12, value: "12" },
-							{ id: 13, value: "13" }, { id: 14, value: "14" }, { id: 15, value: "15" },
-							{ id: 16, value: "16" }, { id: 17, value: "17" }, { id: 18, value: "18" },
-							{ id: 19, value: "19" }, { id: 20, value: "20" }
-						],
-						align: "left"
-					}
+					{ view: "button", id: "profile", type: "icon", icon: "user", width:200, hidden: true}
 				]
 			},
 			{
@@ -382,14 +365,12 @@ function reloadBases() {
 			if (!started) {
 				$$('deletebutton').enable()
 				$$('exportbutton').enable()
-				$$('threads').enable()
 			}
 		}
 		else {
 			$$('ctlbutton').disable()
 			$$('deletebutton').disable()
 			$$('exportbutton').disable()
-			$$('threads').disable()
 		}
 	}
 
@@ -533,7 +514,7 @@ function exportBases() {
 	if (getCheckedCount() > 0) {
 		var dp = ''
 
-		if (dat.user_id == '0') {
+		if (isDemo()) {
 			dp = 'gis_abakan'
 		}
 		$$('exportbutton').disable()
@@ -545,7 +526,7 @@ function exportBases() {
 					var checked = []
 
 					for (var i = 0; i < tasks.length; i++) {
-						if (tasks[i].status == '1' && tasks[i].count > 0)  {
+						if (tasks[i].status == '1' && tasks[i].count > 0) {
 							checked.push(tasks[i])
 						}
 					}
@@ -608,7 +589,6 @@ function getCheckedCount() {
 
 function startParsing() {
 	started = true
-	$$('threads').disable()
 	$$('deletebutton').disable()
 	$$('exportbutton').disable()
 	$$('propertybutton').disable()
@@ -640,7 +620,6 @@ function stopParsing() {
 	started = false
 	parser.stop()
 
-	$$('threads').enable()
 	$$('deletebutton').enable()
 	$$('exportbutton').enable()
 	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "fas fa-play", label: "Старт", autowidth: true, click: startParsing, tooltip: "Запуск парсинга" }, $$('ctlbutton'))
