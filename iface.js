@@ -70,38 +70,6 @@ function getCityData() {
 	return countries
 }
 
-function getCityData2() {
-	var countries = []
-
-	for (var id in dat.countries) {
-		var cities = []
-		for (var i = 0; i < dat.cities.length; i++) {
-			if (dat.cities[i].country == id) {
-				var o = {
-					id: dat.cities[i].id,
-					value: dat.cities[i].name,
-					code: dat.cities[i].code
-				}
-
-				if (isDemo()) {
-					if (o.id == '69') cities.push(o)
-				} else {
-					cities.push(o)
-				}
-			}
-		}
-
-		countries.push({
-			id: id,
-			open: false,
-			value: dat.countries[id],
-			data: cities
-		})
-	}
-
-	return countries
-}
-
 function getCategoryData() {
 	var categories = []
 
@@ -638,35 +606,6 @@ function getCheckedCount() {
 	return cnt
 }
 
-function startParsing2() {
-	started = true
-	$$('threads').disable()
-	$$('deletebutton').disable()
-	$$('exportbutton').disable()
-	$$('propertybutton').disable()
-
-	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "fas fa-stop", label: "Стоп", autowidth: true, click: stopParsing, tooltip: "Остановка парсинга" }, $$('ctlbutton'))
-
-	gis.parseBases($$('threads').getValue(), function (res, type) {
-		if (type == 'msg') {
-			var id = $$('basestable').getIdByIndex(res[0])
-			var record = $$('basestable').getItem(id)
-			record['count'] = res[1]
-			$$('basestable').updateItem(id, record)
-		}
-		else if (type == 'close') {
-			if (started) {
-				let id = $$('basestable').getIdByIndex(res.index)
-				$$('basestable').addCellCss(id, "count", "highlight")
-				webix.message("Сборка города " + res.title + " завершена")
-			}
-		}
-		else if (type == 'finished') {
-			stopParsing()
-		}
-	})
-}
-
 function startParsing() {
 	started = true
 	$$('threads').disable()
@@ -694,7 +633,6 @@ function startParsing() {
 }
 
 function loadDemo() {
-
 	keywin.close()
 }
 

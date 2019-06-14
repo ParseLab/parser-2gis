@@ -86,7 +86,6 @@
 		var pg = document.createElement('div')
 		pg.id = 'pg'
 		
-
 		var pgv = document.createElement('div')
 		pgv.id = 'pgv'
 
@@ -94,7 +93,6 @@
 
 		webix_skin = "flat";
 		process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true
-		var progress = 0
 
 		autoUpdater.on('update-downloaded', () => {
 			autoUpdater.quitAndInstall()
@@ -130,7 +128,6 @@
 			curWin.show()
 		}
 
-
 		if (!isDev) {
 			autoUpdater.checkForUpdates()
 		} else {
@@ -139,5 +136,4 @@
  
 	</script>
 </body>
-
 </html>
