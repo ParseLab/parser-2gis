@@ -11,24 +11,13 @@ if (process.argv.includes('-u')) {
 const electron = require('electron');
 const { autoUpdater } = require("electron-updater")
 
+
 const isDev = require('electron-is-dev');
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
 if (!process.argv.includes('-d')) electron.Menu.setApplicationMenu(null)
-
-
-
-autoUpdater.on('checking-for-update', () => {
-	console.log('Checking for update...');
-})
-autoUpdater.on('update-available', (ev, info) => {
-	console.log('Update available.');
-})
-autoUpdater.on('update-not-available', (ev, info) => {
-	console.log('Update not available.');
-})
 
 
 let mainWindow;
@@ -41,10 +30,12 @@ function createWindow() {
 			nodeIntegration: true
 		},
 		backgroundColor: '#3498db',
-		show: true,
+		show: false,
 		resizable: true,
 		title: "Парсер 2Gis " + version
 	})
+
+	mainWindow.autoUpdater = autoUpdater
 
 	mainWindow.loadURL(`file://${__dirname}/index.html`)
 
@@ -61,7 +52,6 @@ if (mainWindow) {
 }
 
 app.on('ready', () => {
-	if (!isDev) autoUpdater.checkForUpdates();
 	createWindow();
 });
 

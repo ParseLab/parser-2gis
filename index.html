@@ -16,6 +16,7 @@
 			top: 50%;
 			left: 50%;
 			transform: translateX(-50%) translateY(-50%);
+			display: none;
 		}
 
 		.webix_hcell.center input[type=checkbox] {
@@ -38,6 +39,28 @@
 			background-color: #E5FFE3;
 		}
 
+		#lw {
+			width: 100%;
+			height: 100%;
+			color: white;
+			font-size: 20px;
+			text-align: center;
+			padding-bottom: 10px;
+		}
+
+		#pg {
+			width: 500px;
+			height: 20px;
+			background-color: #9ec3dc;
+		}
+
+		#pgv {
+			width: 0%;
+			height: 100%;
+			background-color: white;
+		}
+
+
 		* {
 			-webkit-user-select: none;
 		}
@@ -49,17 +72,71 @@
 
 	</div>
 	<script type="text/javascript">
+		const isDev = require('electron-is-dev');
+		const remote = require('electron').remote
+		var iface = require('./iface.js');
+		var curWin = remote.getCurrentWindow()
+		var autoUpdater = curWin.autoUpdater
+
+		var lo = document.getElementById('loading')
+		var lw = document.createElement('div')
+		lw.id = 'lw'
+		lw.innerHTML = 'Загрузка обновлений'
+
+		var pg = document.createElement('div')
+		pg.id = 'pg'
+		
+
+		var pgv = document.createElement('div')
+		pgv.id = 'pgv'
+
+		pg.appendChild(pgv)
+
 		webix_skin = "flat";
 		process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true
+		var progress = 0
 
-		var i = new Image();
-		i.onload = function () {
-			require('./iface.js');
+		autoUpdater.on('update-downloaded', () => {
+			autoUpdater.quitAndInstall()
+		})
+
+		autoUpdater.on('update-available', (ev, info) => {
+			startLoader()
+		})
+
+		autoUpdater.on('update-not-available', (ev, info) => {
+			startIface()
+		})
+
+		autoUpdater.on('download-progress', (r) => {
+			setProgress(r.percent)
+		})
+
+		function setProgress(i) {
+			if (i < 0) i = 0
+			else if (i > 100) i = 100
+			pgv.style.width = i + '%'
 		}
 
-		i.src = 'loading.gif';
-		document.getElementById('loading').appendChild(i);
+		function startLoader(){
+			lo.appendChild(lw)
+			lo.appendChild(pg)
+			lo.style.display = 'block'
+			curWin.show()
+		}
 
+		function startIface(){
+			iface.start()
+			curWin.show()
+		}
+
+
+		if (!isDev) {
+			autoUpdater.checkForUpdates()
+		} else {
+			startIface()
+		}
+ 
 	</script>
 </body>
 

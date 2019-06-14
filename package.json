@@ -11,13 +11,16 @@
     "appId": "{9A452D88-9CC1-493A-AA46-8B33FFD4A641}",
     "productName": "Парсер 2Gis",
     "asar": true,
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "artifactName": "parser2gis${version}.${ext}"
+    },
     "publish": {
       "provider": "generic",
       "url": "https://parselab.org/dist",
       "channel": "latest"
-    },
-    "nsis": {
-      "artifactName": "parser2gis${version}.${ext}"
     }
   },
   "repository": {

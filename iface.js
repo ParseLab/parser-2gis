@@ -133,10 +133,8 @@ function getCategoryData() {
 function loadDat(callback) {
 	var project = '32'
 	getJson('https://parselab.org/key/key3.php?project=' + project + '&key=' + parser.licenseKey + '&min', (e, r) => {
-		for(var i in r){
-			dat[i] = r[i]
-		}
 
+		dat.user_id = r
 		if (isDemo()){
 			dat.countries = {ru: dat.countries.ru}
 			for(var i = 0;i<dat.cities.length;i++){
@@ -155,7 +153,8 @@ function loadDat(callback) {
 	})
 }
 
-webix.ready(function () {
+
+exports.start = () => {
 	loadDat(() => {
 		interface_init()
 		reloadBases()
@@ -163,7 +162,13 @@ webix.ready(function () {
 			$$('keywin').show()
 		}
 	})
-})
+}
+
+exports.ready = (callback) => {
+	webix.ready(function () {
+		callback()
+	})
+}
 
 function mark_finished(value, data) {
 	if (data.finished)
