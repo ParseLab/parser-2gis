@@ -132,9 +132,14 @@ class Parser extends EventEmitter {
 
 	getJson(url, callback) {
 		fetch(url, { headers: this.headers })
-			.then(res => res.json())
+			.then((res)=>{
+				if(res.headers.get('ver') != 'ParseLab/' + currentVersion){
+					this.emit('upgrade')
+				}
+				return res.json()
+			})
 			.then(r => {
-				console.log(r)
+				
 				callback(null, r)
 			})
 			.catch(e => {
@@ -146,7 +151,6 @@ class Parser extends EventEmitter {
 		fetch(url, { headers: this.headers })
 			.then(res => res.text())
 			.then(r => {
-				console.log(r)
 				callback(null, r)
 			})
 			.catch(e => {

@@ -35,6 +35,11 @@ var property
 
 var parser = require(__dirname + '/parser4.js')
 
+parser.on('upgrade', ()=>{
+	stopParsing()
+	win.reload()
+})
+
 function isDemo() {
 	if (!dat.user) return true
 	else return false
