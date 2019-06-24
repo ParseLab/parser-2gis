@@ -14,7 +14,13 @@
     "win": {
       "target": "nsis"
     },
+    "mac": {
+      "target": "dmg"
+    },
     "nsis": {
+      "artifactName": "parser2gis${version}.${ext}"
+    },
+    "dmg": {
       "artifactName": "parser2gis${version}.${ext}"
     },
     "publish": {
