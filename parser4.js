@@ -24,6 +24,23 @@ function parseFirmUrl(category, city, key) {
 		.replace('[key]', key)
 }
 
+var fields = [
+	[0, 'id', ''],
+	[1, 'name', ''],
+    [2, 'city_name', ''],
+    [3, 'geometry_name', ''],
+    [4, 'post_code',''],
+    [5, 'phone', ''],
+    [7, 'email', ''],
+    [8, 'website', ''],
+    [9, 'vkontakte', ''],
+    [10, 'instagram', ''],
+    [11, 'lon', ''],
+    [12, 'lat', ''],
+    [13, 'category', ''],
+    [14, 'subcategory', '']
+]
+
 
 class Parser extends EventEmitter {
 	constructor() {
@@ -42,6 +59,8 @@ class Parser extends EventEmitter {
 		this.headers = {
 			'User-Agent': 'Parser2Gis/' + currentVersion
 		}
+
+		this.fields = fields
 	}
 
 	init() {
@@ -176,6 +195,10 @@ class Parser extends EventEmitter {
 		return JSON.parse(fs.readFileSync(dataDir + '/tasks.json')).tasks
 	}
 
+	getTasksCount() {
+		return JSON.parse(fs.readFileSync(dataDir + '/tasks.json')).count
+	}
+
 	removeBases(ids) {
 		var tasks = JSON.parse(fs.readFileSync(dataDir + '/tasks.json'))
 		var newTasks = []
@@ -237,6 +260,19 @@ class Parser extends EventEmitter {
 				o.count = status.count
 
 				res.push(o)
+			}
+		}
+
+		return res
+	}
+
+	getUnfinishedBases(){
+		var res = []
+		var bases = this.getBases()
+		
+		for(var i=0;i<bases.length;i++){
+			if (!bases[i].finished){
+				res.push(bases[i])
 			}
 		}
 
@@ -364,13 +400,15 @@ class Parser extends EventEmitter {
 		} else {
 			if (!this.exportIds.includes(arr[0])) {
 				this.exportIds.push(arr[0])
-				var line = `"${this.exportCo}";"${arr[1]}";"${arr[2]}";"${arr[3]}";"${arr[4]}";"${arr[5]}";"${arr[7]}";"${arr[8]}";"${arr[9]}";"${arr[10]}";"${arr[11]}";"${arr[12]}";"${arr[13]}";"${arr[14]}"\n`
-				fs.appendFile(this.fd, iconv.encode(line, 'win1251'), (e) => {
-					this.emit('msg', this.exportCo)
-					this.exportCo++
-
-					this.appendLines(d, callback)
+				this.onExport(arr, (line)=>{
+					fs.appendFile(this.fd, line, (e) => {
+						this.emit('msg', this.exportCo)
+						this.exportCo++
+	
+						this.appendLines(d, callback)
+					})
 				})
+
 			} else {
 				this.appendLines(d, callback)
 			}
@@ -381,14 +419,20 @@ class Parser extends EventEmitter {
 		this.exportCo = 1
 		fs.open(fileName, 'a', (e, fd) => {
 			this.fd = fd
-			var header = `sep=;\n"id";"name";"city_name";"geometry_name";"post_code";"phone";"email";"website";"vkontakte";"instagram";"lon";"lat";"category";"subcategory"\n`
-			fs.appendFile(this.fd, header, (e) => {
-				this.appendTasks(tasks, (e) => {
-					fs.close(this.fd, (e) => {
-						callback(null)
+			this.onBeforeExport((header)=>{
+				fs.appendFile(this.fd, header, (e) => {
+					this.appendTasks(tasks, (e) => {
+						this.onAfterExport((footer)=>{
+							fs.appendFile(this.fd, footer, (e) => {
+								fs.close(this.fd, (e) => {
+									callback(null)
+								})
+							})
+						})
 					})
 				})
 			})
+
 		})
 	}
 
@@ -407,6 +451,21 @@ class Parser extends EventEmitter {
 			}
 		})
 	}
+
+	onBeforeExport(callback){
+		var header = `sep=;\n"id";"name";"city_name";"geometry_name";"post_code";"phone";"email";"website";"vkontakte";"instagram";"lon";"lat";"category";"subcategory"\n`
+		callback(header)
+	}
+
+	onAfterExport(callback){
+		callback('')
+	}
+
+	onExport(arr, callback){
+		var line = `"${this.exportCo}";"${arr[1]}";"${arr[2]}";"${arr[3]}";"${arr[4]}";"${arr[5]}";"${arr[7]}";"${arr[8]}";"${arr[9]}";"${arr[10]}";"${arr[11]}";"${arr[12]}";"${arr[13]}";"${arr[14]}"\n`
+		line = iconv.encode(line, 'win1251')
+		callback(line)
+	}
 }
 
-module.exports = new Parser()
+module.exports = Parser

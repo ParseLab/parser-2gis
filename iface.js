@@ -17,10 +17,11 @@ function getJson(url, callback) {
 
 var keywin
 var remote = require('electron').remote
-global.app = remote.app
-var dialog = remote.require('electron').dialog
 var win = remote.getCurrentWindow()
-var shell = require('electron').shell
+global.app = remote.app
+var dialog = remote.dialog
+var shell = remote.shell
+
 var started = false
 var taskData = { cities: '', rubrics: '', name: '' }
 var dat = {
@@ -29,13 +30,23 @@ var dat = {
 	categories: require(__dirname + '/dat/categories.json')
 }
 
+global.exportFormats = [{ id: "default", name: "Excel (CSV)" }]
+
 var version
 
 var property
 
-var parser = require(__dirname + '/parser4.js')
+global.Parser = require(__dirname + '/parser4.js')
 
-parser.on('upgrade', ()=>{
+var plugins = fs.readdirSync(__dirname + '/plugins')
+
+for (var i = 0; i < plugins.length; i++) {
+	//require(__dirname + '/plugins/' + plugins[i])
+}
+
+var parser = new Parser()
+
+parser.on('upgrade', () => {
 	stopParsing()
 	win.reload()
 })
@@ -63,7 +74,7 @@ function getCityData() {
 		if (cities.length > 0) {
 			countries.push({
 				id: id,
-				open: false,
+				open: (isDemo()) ? true : false,
 				value: dat.countries[id],
 				data: cities
 			})
@@ -114,13 +125,13 @@ function loadDat(callback) {
 					dat.cities = [dat.cities[i]]
 				}
 			}
-		} 
-/* 		else {
-			$$("profile").define("label", r.email);
-			$$("profile").refresh();
-			
 		}
- */
+		/* 		else {
+					$$("profile").define("label", r.email);
+					$$("profile").refresh();
+					
+				}
+		 */
 		callback()
 	})
 }
@@ -129,7 +140,6 @@ function loadDat(callback) {
 exports.start = () => {
 	interface_init()
 	loadDat(() => {
-
 		reloadBases()
 		if (isDemo()) {
 			$$('keywin').show()
@@ -256,7 +266,7 @@ function interface_init() {
 					{ view: "button", hidden: false, id: "ctlbutton", disabled: true, type: "iconButton", icon: "fas fa-play", label: "Старт", autowidth: true, click: startParsing, tooltip: "Запуск парсинга" },
 					{ gravity: 4 },
 					{ view: "button", hidden: true, id: "reloadbutton", type: "iconButton", tooltip: "Обновить", icon: "fas fa-refresh", width: 36, click: reloadBases, align: "right" },
-					{ view: "button", id: "profile", type: "icon", icon: "user", width:200, hidden: true}
+					{ view: "button", id: "profile", type: "icon", icon: "user", width: 200, hidden: true }
 				]
 			},
 			{
@@ -275,8 +285,8 @@ function interface_init() {
 			},
 			{
 				view: "toolbar", cols: [
-					{ view: "button", type: "iconButton", icon: "fas fa-download", label: "Выгрузить выделенные", autowidth: true, id: "exportbutton", click: exportBases, align: "left", tooltip: "Выгрузить выделенные базы" },
-					{ view: "button", type: "iconButton", icon: "fas fa-trash", label: "Удалить выделенные", autowidth: true, id: "deletebutton", click: deleteBases, align: "left", tooltip: "Удалить выделенные базы" },
+					{ view: "button", type: "iconButton", icon: "fas fa-download", label: "Выгрузить отмеченные", autowidth: true, id: "exportbutton", click: exportBases, align: "left", tooltip: "Выгрузить отмеченные базы" },
+					{ view: "button", type: "iconButton", icon: "fas fa-trash", label: "Удалить отмеченные", autowidth: true, id: "deletebutton", click: deleteBases, align: "left", tooltip: "Удалить отмеченные базы" },
 					{ gravity: 4 },
 					{ view: "button", hidden: true, type: "iconButton", icon: "fas fa-cog", label: "Настройки", autowidth: true, id: "propertybutton", align: "right", tooltip: "Настройки", disabled: true }
 				]
@@ -297,7 +307,7 @@ function interface_init() {
 			view: "toolbar",
 			cols: [
 				{ view: "label", label: "Выберите города для парсинга", id: "mylabel" },
-				{ view: "button", label: 'Закрыть', width: 100, align: 'right', click: "$$('mywin').hide();" }
+				{ view: "button", label: 'Закрыть', width: 100, align: 'right', click: closeWin }
 			]
 		},
 		body: {
@@ -315,38 +325,90 @@ function interface_init() {
 	})
 }
 
+function closeWin() {
+	$$('mywin').hide();
+	if (isDemo()) {
+		helpMsg(1)
+	}
+}
+
 function selectTask() {
 	$$("mytree").filter("#value#", '')
 	taskData.rubrics = getSelectedRubrics()
 
-	webix.ui({
-		id: "lll", rows: [{
-			view: "form",
-			id: "mytree",
-			width: 300,
-			elements: [
-				{ view: "label", label: 'Например: "Автосалоны Абакана"' },
-				{ id: "tasktext", view: "text" },
-			]
-		}]
-	}, $$('lll'))
+	if (taskData.rubrics.length > 0) {
 
-	webix.ui(
-		{ view: "button", id: "mybutton", value: "Завершить", width: 100, click: createFilters, hotkey: "enter" }
-		, $$('mybutton'))
+		webix.ui({
+			id: "lll", rows: [{
+				view: "form",
+				id: "mytree",
+				width: 300,
+				elements: [
+					{ view: "label", label: 'Например: "Автосалоны Абакана"' },
+					{ id: "tasktext", view: "text" },
+				]
+			}]
+		}, $$('lll'))
 
-	webix.ui(
-		{ view: "label", label: "Укажите имя задачи", id: "mylabel" }
-		, $$('mylabel'))
+		webix.ui(
+			{ view: "button", id: "mybutton", value: "Завершить", width: 100, click: createFilters, hotkey: "enter" }
+			, $$('mybutton'))
 
-	$$('mywin').show()
-	$$('tasktext').focus()
+		webix.ui(
+			{ view: "label", label: "Укажите имя задачи", id: "mylabel" }
+			, $$('mylabel'))
+
+		$$('mywin').show()
+		if (isDemo()) {
+			var count = parser.getTasksCount()
+			count++
+			$$('tasktext').setValue('Задача ' + count)
+		}
+		$$('tasktext').focus()
+		$$('tasktext').getInputNode().select()
+
+		helpMsg(4)
+	} else {
+		webix.message({ type: "error", text: "Необходимо выбрать хотя бы одну рубрику для парсинга базы" })
+
+	}
+}
+
+function helpMsg(id, p = {}) {
+	if (isDemo()) {
+		webix.message.hideAll()
+
+		var msgs = {
+			"1": `Для начала работы, нажмите кнопку "Создать базы"`,
+			"2": `На этом этапе выбираем города для парсинга. В бесплатной версии доступен только  город Абакан. Отметьте его галочкой и нажмите "Продолжить"`,
+			"3": `Теперь выберите нужные вам рубрики для парсинга. Если вы хотите собрать полную базу города, можете отметить вариант "Все"`,
+			"4": `Осталось придумать название задачи. Название может быть абсолютно любым, оно никак не влияет на процесс парсинга`,
+			"5": `Теперь нажмите кнопку "Старт", и парсер начнет собирать организации в созданную базу`,
+			"6": `Осталось лишь выгрузить собранную базу в файл. Поставьте галочку напротив базы Абакана и нажмите "Выгрузить отмеченные"`,
+			"7": `После окончания выгрузки, файл с выгруженной базой автоматически откроется в Excel`
+		}
+
+		var params = {
+			expire: -1,
+			id: "helpMessage",
+			type: "help",
+			text: msgs[id]
+		}
+
+		return webix.message(Object.assign(params, p))
+	}
 }
 
 function selectCity() {
 	webix.ui({
 		id: "lll", rows: [
-			{ view: "tree", id: "mytree", threeState: true, scroll: "y", width: 400, template: "{common.icon()} {common.checkbox()}&nbsp<span>#value#</span>", data: getCityData(), select: false }
+			{
+				view: "tree", id: "mytree", threeState: true, scroll: "y", width: 400, template: "{common.icon()} {common.checkbox()}&nbsp<span>#value#</span>", data: getCityData(), select: false, ready: function () {
+					if (isDemo()) {
+						//this.checkItem("69")
+					}
+				}
+			}
 		]
 	}, $$('lll'))
 
@@ -359,6 +421,8 @@ function selectCity() {
 		, $$('mylabel'))
 
 	$$('mywin').show()
+
+	helpMsg(2)
 }
 
 function reloadBases() {
@@ -406,7 +470,7 @@ function createBases() {
 				{
 					view: "tree", filterMode: {},
 					id: "mytree", threeState: true, scroll: "y", template: "{common.icon()} {common.checkbox()}&nbsp<span>#value#</span>", select: false, data: getCategoryData(), datatype: "json", ready: function () {
-						this.checkItem("root")
+						//this.checkItem("root")
 					}
 				}
 			]
@@ -438,9 +502,10 @@ function createBases() {
 		webix.ui(
 			{ view: "label", label: "Выберите категории и рубрики", id: "mylabel" }
 			, $$('mylabel'))
-		$$('mytree').checkItem("root")
 
 		$$('searchtext').focus()
+
+		helpMsg(3)
 	}
 	else {
 		webix.message({ type: "error", text: "Необходимо выбрать хотя бы один город для создания базы" })
@@ -483,6 +548,7 @@ function getSelectedRubrics() {
 }
 
 function createFilters() {
+
 	if ($$('tasktext').getValue().trim() != '') {
 		taskData.name = $$('tasktext').getValue()
 		parser.createTask(taskData.name, taskData.cities, taskData.rubrics)
@@ -490,11 +556,14 @@ function createFilters() {
 		$$('mywin').hide()
 		$$('basestable').clearAll()
 		reloadBases()
-	}
-	else {
+		helpMsg(5)
+	} else {
 		$$('tasktext').setValue('')
+
 		$$('tasktext').focus()
+		webix.message({ type: "error", text: "Название задачи не может быть пустым" })
 	}
+
 }
 
 function deleteBases() {
@@ -512,46 +581,65 @@ function deleteBases() {
 
 		$$('basestable').clearAll()
 		reloadBases()
+	} else {
+		webix.message({ type: "error", text: "Вы не отметили ни одной базы для удаления" })
 	}
 }
 
+function getChecked() {
+	var tasks = $$('basestable').serialize()
+	var checked = []
+
+	for (var i = 0; i < tasks.length; i++) {
+		if (tasks[i].status == '1' && tasks[i].count > 0) {
+			checked.push(tasks[i])
+		}
+	}
+
+	return checked
+}
+
 function exportBases() {
-	if (getCheckedCount() > 0) {
+	if (getCheckedStarted() > 0) {
 		var dp = ''
 
 		if (isDemo()) {
 			dp = 'gis_abakan'
 		}
 		$$('exportbutton').disable()
-		dialog.showSaveDialog({ buttonLabel: "Выгрузить", defaultPath: dp, filters: [{ name: 'Excel', extensions: ['csv'] }] }, function (filename) {
-			$$('exportbutton').enable()
+		dialog.showSaveDialog(win, { buttonLabel: "Выгрузить", defaultPath: dp, filters: [{ name: 'Excel', extensions: ['csv'] }] }, function (filename) {
 			if (filename) {
-				if (getCheckedCount() > 0) {
-					var tasks = $$('basestable').serialize()
-					var checked = []
+				if(process.platform == 'linux') filename += '.csv'
+				var checked = getChecked()
+				$$('exportwin').show()
+				$$('countlabel').setValue('0')
 
-					for (var i = 0; i < tasks.length; i++) {
-						if (tasks[i].status == '1' && tasks[i].count > 0) {
-							checked.push(tasks[i])
-						}
+				parser.on('msg', (c) => {
+					$$('countlabel').setValue(c.toString())
+				})
+				var h = helpMsg(7)
+
+				parser.export(checked, filename, (e) => {
+					webix.message("Выгрузка выполнена")
+					$$('exportbutton').enable()
+					$$('exportwin').hide()
+					uncheckMaster()
+					if(shell.openItem(filename)){
+						setTimeout(() => {
+							webix.message.hide(h)
+						}, 5000)
+					} else {
+						webix.message.hideAll()
+						webix.message({ type: "error", text: "Не удалось запустить выгруженный файл в Excel. Попробуйте открыть его вручную", expire: 10000 })
 					}
 
-					$$('exportwin').show()
-					$$('countlabel').setValue('0')
-
-					parser.on('msg', (c) => {
-						$$('countlabel').setValue(c.toString())
-					})
-
-					parser.export(checked, filename, (e) => {
-						webix.message("Выгрузка выполнена")
-						$$('exportwin').hide()
-						uncheckMaster()
-						shell.openItem(filename)
-					})
-				}
+				})
+			} else {
+				$$('exportbutton').enable()
 			}
 		})
+	} else {
+		webix.message({ type: "error", text: "Необходимо отметить хотя бы одну базу, доступную для выгрузки" })
 	}
 
 }
@@ -592,7 +680,22 @@ function getCheckedCount() {
 	return cnt
 }
 
+function getCheckedStarted() {
+	var cnt = 0
+	$$('basestable').eachRow(
+		function (row) {
+			if ($$('basestable').getItem(row).status == '1' && $$('basestable').getItem(row).count > 0) {
+				cnt++
+			}
+		}
+	)
+
+	return cnt
+}
+
+
 function startParsing() {
+	if (isDemo()) webix.message.hideAll()
 	started = true
 	$$('deletebutton').disable()
 	$$('exportbutton').disable()
@@ -607,6 +710,7 @@ function startParsing() {
 				webix.message("Сборка города " + r.cityTitle + " завершена")
 			} else if (r.type == 'finish') {
 				webix.message("Парсинг завершен")
+				helpMsg(6)
 			}
 		} else {
 			record['count'] = r
@@ -619,6 +723,7 @@ function startParsing() {
 
 function loadDemo() {
 	keywin.close()
+	helpMsg(1)
 }
 
 function stopParsing() {

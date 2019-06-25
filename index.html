@@ -60,6 +60,20 @@
 			background-color: white;
 		}
 
+		/* message box + inner border */
+		.webix_help div {
+			background-color: #9edda9;
+			border: 1px solid #676d71;
+			color: #484444
+		}
+
+		/* outer border */
+		.webix_help {
+			background-color: #7e59bd;
+			border: 1px solid #7e59bd;
+			box-shadow: 0 0 10px #000
+		}
+
 
 		* {
 			-webkit-user-select: none;
@@ -76,7 +90,7 @@
 		const remote = require('electron').remote
 		var iface = require('./iface.js');
 		var curWin = remote.getCurrentWindow()
-		var autoUpdater = curWin.autoUpdater
+		global.autoUpdater = curWin.autoUpdater
 
 		var lo = document.getElementById('loading')
 		var lw = document.createElement('div')
@@ -85,7 +99,7 @@
 
 		var pg = document.createElement('div')
 		pg.id = 'pg'
-		
+
 		var pgv = document.createElement('div')
 		pgv.id = 'pgv'
 
@@ -116,14 +130,14 @@
 			pgv.style.width = i + '%'
 		}
 
-		function startLoader(){
+		function startLoader() {
 			lo.appendChild(lw)
 			lo.appendChild(pg)
 			lo.style.display = 'block'
 			curWin.show()
 		}
 
-		function startIface(){
+		function startIface() {
 			iface.start()
 			curWin.show()
 		}
@@ -133,7 +147,8 @@
 		} else {
 			startIface()
 		}
- 
+
 	</script>
 </body>
+
 </html>
