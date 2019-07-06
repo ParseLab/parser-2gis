@@ -15,6 +15,9 @@ if (!fs.existsSync(dataDir + '/db')) fs.mkdirSync(dataDir + '/db')
 if (!fs.existsSync(dataDir + '/key.json')) fs.writeFileSync(dataDir + '/key.json', '"demo"')
 if (!fs.existsSync(dataDir + '/tasks.json')) fs.writeFileSync(dataDir + '/tasks.json', '{"tasks":[],"count":0}')
 
+if (!fs.existsSync(dataDir + '/config.json')) fs.writeFileSync(dataDir + '/config.json', '{"encoding":"win1251"}')
+var config = require(dataDir + '/config.json')
+
 var firmurl4 = 'http://db.parselab.org/[city]/[category].json?key=[key]'
 
 function parseFirmUrl(category, city, key) {
@@ -515,7 +518,7 @@ class Parser extends EventEmitter {
 
 	onExport(arr, callback){
 		var line = `"${this.exportCo}";"${arr[1]}";"${arr[2]}";"${arr[3]}";"${arr[4]}";"${arr[5]}";"${arr[7]}";"${arr[8]}";"${arr[9]}";"${arr[10]}";"${arr[11]}";"${arr[12]}";"${arr[13]}";"${arr[14]}"\n`
-		line = iconv.encode(line, 'win1251')
+		if (config.encoding != 'utf-8') line = iconv.encode(line, config.encoding)
 		callback(line)
 	}
 }
