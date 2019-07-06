@@ -15,6 +15,18 @@
     "win": {
       "target": "nsis"
     },
+    "linux": {
+      "artifactName": "parser2gis${version}.${ext}",
+      "target": "deb",
+      "icon": "icon.png",
+      "executableName": "parser2gis",
+      "desktop": {
+        "Name": "Parser2Gis",
+        "Icon": "icon.png",
+        "Comment": "2Gis parser",
+        "Categories": "Network"
+      }
+    },
     "mac": {
       "target": "dmg"
     },
@@ -34,7 +46,11 @@
     "type": "git",
     "url": "git+https://github.com/electron/electron-quick-start.git"
   },
-  "author": "ParseLab",
+  "author": {
+    "name": "ParseLab",
+    "email": "info@parselab.org",
+    "url": "https://parselab.org"
+  },
   "license": "CC0-1.0",
   "bugs": {
     "url": "https://github.com/electron/electron-quick-start/issues"

@@ -86,10 +86,24 @@
 
 	</div>
 	<script type="text/javascript">
+
+		const fs = require('fs')
+
+		global.remote = require('electron').remote
+		require('./config.js')
+		
 		const isDev = require('electron-is-dev');
-		const remote = require('electron').remote
-		var iface = require('./iface.js');
+		var ver = JSON.parse(fs.readFileSync(__dirname + '/version.json'))
+		global.isBeta = false
+		if (ver.indexOf('beta') != -1) isBeta = true
+		global.currentVersion = ver
+
 		var curWin = remote.getCurrentWindow()
+		//global.log = remote.log
+		//log(config)
+		var iface = require('./iface.js')
+		var cli = require('./cli.js')
+
 		global.autoUpdater = curWin.autoUpdater
 
 		var lo = document.getElementById('loading')
@@ -109,15 +123,18 @@
 		process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true
 
 		autoUpdater.on('update-downloaded', () => {
+			info('Update downloaded.')
 			autoUpdater.quitAndInstall()
 		})
 
 		autoUpdater.on('update-available', (ev, info) => {
+			info('Update available!')
 			startLoader()
 		})
 
 		autoUpdater.on('update-not-available', (ev, info) => {
-			startIface()
+			info('Update not available.')
+			if(!config.headless) startIface()
 		})
 
 		autoUpdater.on('download-progress', (r) => {
@@ -142,10 +159,16 @@
 			curWin.show()
 		}
 
-		if (!isDev) {
+		if (!isDev && process.platform != 'linux' && !isBeta) {
+			info('Checking for updates.')
 			autoUpdater.checkForUpdates()
 		} else {
-			startIface()
+			if(!config.headless) {
+				startIface()
+			} else {
+				info('Parser started in headless mode. Cli module start')
+				cli.start()
+			}
 		}
 
 	</script>
