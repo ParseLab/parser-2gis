@@ -7,8 +7,7 @@ const Promise = require('bluebird')
 var iconv = require('iconv-lite');
 const EventEmitter = require('events');
 fetch.Promise = Promise
-var dataDir = app.getPath('userData')
-var currentVersion = JSON.parse(fs.readFileSync(__dirname + '/version.json'))
+var dataDir = remote.app.getPath('userData')
 
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir)
 if (!fs.existsSync(dataDir + '/db')) fs.mkdirSync(dataDir + '/db')
@@ -30,18 +29,18 @@ function parseFirmUrl(category, city, key) {
 var fields = [
 	[0, 'id', ''],
 	[1, 'name', ''],
-    [2, 'city_name', ''],
-    [3, 'geometry_name', ''],
-    [4, 'post_code',''],
-    [5, 'phone', ''],
-    [7, 'email', ''],
-    [8, 'website', ''],
-    [9, 'vkontakte', ''],
-    [10, 'instagram', ''],
-    [11, 'lon', ''],
-    [12, 'lat', ''],
-    [13, 'category', ''],
-    [14, 'subcategory', '']
+	[2, 'city_name', ''],
+	[3, 'geometry_name', ''],
+	[4, 'post_code', ''],
+	[5, 'phone', ''],
+	[7, 'email', ''],
+	[8, 'website', ''],
+	[9, 'vkontakte', ''],
+	[10, 'instagram', ''],
+	[11, 'lon', ''],
+	[12, 'lat', ''],
+	[13, 'category', ''],
+	[14, 'subcategory', '']
 ]
 
 
@@ -81,6 +80,8 @@ class Parser extends EventEmitter {
 		if (status.count > 0 && !status.finished) {
 			this.pool = status.pool
 			this.ids = this.getBaseIndex(base.taskId, base.city.code)
+
+			this.pk = this.getBasePk(base.taskId, base.city.code)
 			this.co = status.count
 		} else {
 			this.ids = {}
@@ -127,7 +128,7 @@ class Parser extends EventEmitter {
 
 	parseRubric(msg, callback) {
 		var rubricId = this.pool.shift()
-		
+
 		if (this.started) {
 			var url = parseFirmUrl(rubricId, this.curCity.id, this.licenseKey)
 			this.getJson(url, (e, r) => {
@@ -139,11 +140,12 @@ class Parser extends EventEmitter {
 						this.ids[r[i][0]] = [rubricId, i]
 						re.push(r[i])
 						this.pk.push([parseInt(rubricId, 10), idx])
-						//this.pk[this.co + c+1] = [rubricId, re.length -1]
+
 						c++
 						idx++
 					}
 				}
+
 				this.co += c
 
 				msg(this.co)
@@ -166,14 +168,14 @@ class Parser extends EventEmitter {
 
 	getJson(url, callback) {
 		fetch(url, { headers: this.headers })
-			.then((res)=>{
-				if(res.headers.get('ver') != 'ParseLab/' + currentVersion){
+			.then((res) => {
+				if (res.headers.get('ver') != 'ParseLab/' + currentVersion) {
 					this.emit('upgrade')
 				}
 				return res.json()
 			})
 			.then(r => {
-				
+
 				callback(null, r)
 			})
 			.catch(e => {
@@ -270,7 +272,6 @@ class Parser extends EventEmitter {
 				}
 
 				var status = this.getBaseStatus(tasks[k].id, tasks[k].cities[i].code)
-
 				o.finished = status.finished
 				o.count = status.count
 
@@ -281,12 +282,12 @@ class Parser extends EventEmitter {
 		return res
 	}
 
-	getUnfinishedBases(){
+	getUnfinishedBases() {
 		var res = []
 		var bases = this.getBases()
-		
-		for(var i=0;i<bases.length;i++){
-			if (!bases[i].finished){
+
+		for (var i = 0; i < bases.length; i++) {
+			if (!bases[i].finished) {
 				res.push(bases[i])
 			}
 		}
@@ -309,9 +310,10 @@ class Parser extends EventEmitter {
 
 	getBaseStatus(taskId, cityCode) {
 		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
-		var statusFile =  dbDir + '/status.json'
+
+		var statusFile = dbDir + '/status.json'
 		var indexFile = dbDir + '/index.json'
-		
+
 		var status
 
 		if (fs.existsSync(statusFile)) {
@@ -329,10 +331,11 @@ class Parser extends EventEmitter {
 		return status
 	}
 
-	getBaseIndex(taskId, cityCode){
+
+	getBaseIndex(taskId, cityCode) {
 		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
 		var indexFile = dbDir + '/index.json'
-		
+
 		if (fs.existsSync(indexFile)) {
 			return JSON.parse(fs.readFileSync(indexFile))
 		} else {
@@ -340,16 +343,17 @@ class Parser extends EventEmitter {
 		}
 	}
 
-	saveBaseIndex(taskId, cityCode){
+
+	saveBaseIndex(taskId, cityCode) {
 		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
-		
+
 		fs.writeFileSync(dbDir + '/index.json', JSON.stringify(this.ids))
 	}
 
-	getBasePk(taskId, cityCode){
+	getBasePk(taskId, cityCode) {
 		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
 		var indexFile = dbDir + '/pk.json'
-		
+
 		if (fs.existsSync(indexFile)) {
 			return JSON.parse(fs.readFileSync(indexFile))
 		} else {
@@ -357,9 +361,10 @@ class Parser extends EventEmitter {
 		}
 	}
 
-	saveBasePk(taskId, cityCode){
+
+	saveBasePk(taskId, cityCode) {
 		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
-		
+
 		fs.writeFileSync(dbDir + '/pk.json', JSON.stringify(this.pk))
 	}
 
@@ -453,18 +458,20 @@ class Parser extends EventEmitter {
 			callback(null)
 		} else {
 			//if (!this.exportIds.includes(arr[0])) {
-				//this.exportIds.push(arr[0])
-				this.onExport(arr, (line)=>{
-					fs.appendFile(this.fd, line, (e) => {
-						this.emit('msg', this.exportCo)
-						this.exportCo++
-	
-						this.appendLines(d, callback)
-					})
+
+			//this.exportIds.push(arr[0])
+			this.onExport(arr, (line) => {
+				fs.appendFile(this.fd, line, (e) => {
+					this.emit('msg', this.exportCo)
+					this.exportCo++
+
+					this.appendLines(d, callback)
 				})
+			})
 
 			//} else {
-				//this.appendLines(d, callback)
+
+			//this.appendLines(d, callback)
 			//}
 		}
 	}
@@ -474,10 +481,10 @@ class Parser extends EventEmitter {
 		this.exportCo = 1
 		fs.open(fileName, 'a', (e, fd) => {
 			this.fd = fd
-			this.onBeforeExport((header)=>{
+			this.onBeforeExport((header) => {
 				fs.appendFile(this.fd, header, (e) => {
 					this.appendTasks(tasks, (e) => {
-						this.onAfterExport((footer)=>{
+						this.onAfterExport((footer) => {
 							fs.appendFile(this.fd, footer, (e) => {
 								fs.close(this.fd, (e) => {
 									console.timeEnd('exp')
@@ -507,16 +514,16 @@ class Parser extends EventEmitter {
 		})
 	}
 
-	onBeforeExport(callback){
+	onBeforeExport(callback) {
 		var header = `sep=;\n"id";"name";"city_name";"geometry_name";"post_code";"phone";"email";"website";"vkontakte";"instagram";"lon";"lat";"category";"subcategory"\n`
 		callback(header)
 	}
 
-	onAfterExport(callback){
+	onAfterExport(callback) {
 		callback('')
 	}
 
-	onExport(arr, callback){
+	onExport(arr, callback) {
 		var line = `"${this.exportCo}";"${arr[1]}";"${arr[2]}";"${arr[3]}";"${arr[4]}";"${arr[5]}";"${arr[7]}";"${arr[8]}";"${arr[9]}";"${arr[10]}";"${arr[11]}";"${arr[12]}";"${arr[13]}";"${arr[14]}"\n`
 		if (config.encoding != 'utf-8') line = iconv.encode(line, config.encoding)
 		callback(line)

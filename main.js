@@ -1,10 +1,13 @@
 /* eslint-disable semi */
+const fs = require('fs')
+
 var version = require('./version.json')
 
 const electron = require('electron');
-const { autoUpdater } = require("electron-updater")
 
+const { autoUpdater } = require("electron-updater")
 const app = electron.app;
+
 const BrowserWindow = electron.BrowserWindow;
 
 if (!process.argv.includes('-d')) electron.Menu.setApplicationMenu(null)
@@ -41,6 +44,7 @@ if (mainWindow) {
 }
 
 app.on('ready', () => {
+
 	createWindow();
 });
 

@@ -16,9 +16,7 @@ function getJson(url, callback) {
 }
 
 var keywin
-var remote = require('electron').remote
 var win = remote.getCurrentWindow()
-global.app = remote.app
 var dialog = remote.dialog
 var shell = remote.shell
 
@@ -32,16 +30,14 @@ var dat = {
 
 global.exportFormats = [{ id: "default", name: "Excel (CSV)" }]
 
-var version
-
-var property
-
-global.Parser = require(__dirname + '/parser4.js')
+const Parser = require(__dirname + '/parser4.js')
 
 var plugins = fs.readdirSync(__dirname + '/plugins')
 
 for (var i = 0; i < plugins.length; i++) {
-	//require(__dirname + '/plugins/' + plugins[i])
+	if (config.plugins.includes(plugins[i])){
+		require(__dirname + '/plugins/' + plugins[i])
+	}
 }
 
 var parser = new Parser()
@@ -132,6 +128,7 @@ function loadDat(callback) {
 					
 				}
 		 */
+		
 		callback()
 	})
 }
@@ -695,12 +692,14 @@ function getCheckedStarted() {
 
 
 function startParsing() {
+	var co = 0
 	if (isDemo()) webix.message.hideAll()
 	started = true
 	$$('deletebutton').disable()
 	$$('exportbutton').disable()
 	$$('propertybutton').disable()
 	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "fas fa-stop", label: "Стоп", autowidth: true, click: stopParsing, tooltip: "Остановка парсинга" }, $$('ctlbutton'))
+	
 	parser.start((r) => {
 		var id = $$('basestable').getIdByIndex(parser.curIndex)
 		var record = $$('basestable').getItem(id)
