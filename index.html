@@ -142,7 +142,7 @@
 			curWin.show()
 		}
 
-		if (!isDev) {
+		if (!isDev && process.platform != 'linux') {
 			autoUpdater.checkForUpdates()
 		} else {
 			startIface()

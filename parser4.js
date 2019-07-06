@@ -50,6 +50,7 @@ class Parser extends EventEmitter {
 		this.curTaskId
 		this.curIndex
 		this.ids
+		this.pk
 		this.co
 		this.exportCo
 		this.exportIds
@@ -76,10 +77,11 @@ class Parser extends EventEmitter {
 		var status = this.getBaseStatus(base.taskId, base.city.code)
 		if (status.count > 0 && !status.finished) {
 			this.pool = status.pool
-			this.ids = status.ids
+			this.ids = this.getBaseIndex(base.taskId, base.city.code)
 			this.co = status.count
 		} else {
 			this.ids = {}
+			this.pk = []
 			this.co = 0
 			for (var i = 0; i < base.rubrics.length; i++) {
 				this.pool.push(base.rubrics[i])
@@ -101,6 +103,9 @@ class Parser extends EventEmitter {
 			var baseDir = dataDir + '/db/gis_' + taskId + '_' + city.code
 
 			if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir)
+			if (!fs.existsSync(baseDir + '/index.json')) fs.writeFileSync(baseDir + '/index.json', '{}')
+			if (!fs.existsSync(baseDir + '/pk.json')) fs.writeFileSync(baseDir + '/pk.json', '{}')
+
 
 			this.createPool(base)
 
@@ -119,21 +124,28 @@ class Parser extends EventEmitter {
 
 	parseRubric(msg, callback) {
 		var rubricId = this.pool.shift()
+		
 		if (this.started) {
 			var url = parseFirmUrl(rubricId, this.curCity.id, this.licenseKey)
 			this.getJson(url, (e, r) => {
 				var c = 0
+				var re = []
+				var idx = 0
 				for (var i = 0; i < r.length; i++) {
 					if (!this.ids.hasOwnProperty(r[i][0])) {
-						this.ids[r[i][0]] = true
+						this.ids[r[i][0]] = [rubricId, i]
+						re.push(r[i])
+						this.pk.push([parseInt(rubricId, 10), idx])
+						//this.pk[this.co + c+1] = [rubricId, re.length -1]
 						c++
+						idx++
 					}
 				}
 				this.co += c
 
 				msg(this.co)
 
-				fs.writeFile(dataDir + '/db/gis_' + this.curTaskId + '_' + this.curCity.code + '/' + rubricId + '.json', JSON.stringify(r), (e) => {
+				fs.writeFile(dataDir + '/db/gis_' + this.curTaskId + '_' + this.curCity.code + '/' + rubricId + '.json', JSON.stringify(re), (e) => {
 					if (this.pool.length > 0) {
 						this.parseRubric(msg, callback)
 					} else {
@@ -293,7 +305,10 @@ class Parser extends EventEmitter {
 	}
 
 	getBaseStatus(taskId, cityCode) {
-		var statusFile = dataDir + '/db/gis_' + taskId + '_' + cityCode + '/status.json'
+		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
+		var statusFile =  dbDir + '/status.json'
+		var indexFile = dbDir + '/index.json'
+		
 		var status
 
 		if (fs.existsSync(statusFile)) {
@@ -302,7 +317,6 @@ class Parser extends EventEmitter {
 			status = {
 				finished: false,
 				count: 0,
-				ids: {},
 				pool: []
 			}
 
@@ -312,16 +326,55 @@ class Parser extends EventEmitter {
 		return status
 	}
 
+	getBaseIndex(taskId, cityCode){
+		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
+		var indexFile = dbDir + '/index.json'
+		
+		if (fs.existsSync(indexFile)) {
+			return JSON.parse(fs.readFileSync(indexFile))
+		} else {
+			return {}
+		}
+	}
+
+	saveBaseIndex(taskId, cityCode){
+		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
+		
+		fs.writeFileSync(dbDir + '/index.json', JSON.stringify(this.ids))
+	}
+
+	getBasePk(taskId, cityCode){
+		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
+		var indexFile = dbDir + '/pk.json'
+		
+		if (fs.existsSync(indexFile)) {
+			return JSON.parse(fs.readFileSync(indexFile))
+		} else {
+			return {}
+		}
+	}
+
+	saveBasePk(taskId, cityCode){
+		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
+		
+		fs.writeFileSync(dbDir + '/pk.json', JSON.stringify(this.pk))
+	}
+
+
+
 	saveBaseStatus(taskId, cityCode, status) {
-		var statusFile = dataDir + '/db/gis_' + taskId + '_' + cityCode + '/status.json'
+		var dbDir = dataDir + '/db/gis_' + taskId + '_' + cityCode
+		var statusFile = dbDir + '/status.json'
+		delete status.ids
 		fs.writeFileSync(statusFile, JSON.stringify(status))
+		this.saveBaseIndex(taskId, cityCode)
+		this.saveBasePk(taskId, cityCode)
 	}
 
 	setBaseFinished(taskId, cityCode) {
 		var status = {
 			finished: true,
 			count: this.co,
-			ids: {},
 			pool: []
 		}
 		this.saveBaseStatus(taskId, cityCode, status)
@@ -331,7 +384,6 @@ class Parser extends EventEmitter {
 		var status = this.getBaseStatus(this.curTaskId, this.curCity.code)
 		status.count = this.co
 		status.finished = true
-		status.ids = {}
 		status.pool = []
 		this.saveBaseStatus(this.curTaskId, this.curCity.code, status)
 	}
@@ -343,7 +395,6 @@ class Parser extends EventEmitter {
 	pause() {
 		var status = this.getBaseStatus(this.curTaskId, this.curCity.code)
 		status.count = this.co
-		status.ids = this.ids
 		status.pool = this.pool
 		this.saveBaseStatus(this.curTaskId, this.curCity.code, status)
 	}
@@ -398,8 +449,8 @@ class Parser extends EventEmitter {
 		if (!arr) {
 			callback(null)
 		} else {
-			if (!this.exportIds.includes(arr[0])) {
-				this.exportIds.push(arr[0])
+			//if (!this.exportIds.includes(arr[0])) {
+				//this.exportIds.push(arr[0])
 				this.onExport(arr, (line)=>{
 					fs.appendFile(this.fd, line, (e) => {
 						this.emit('msg', this.exportCo)
@@ -409,13 +460,14 @@ class Parser extends EventEmitter {
 					})
 				})
 
-			} else {
-				this.appendLines(d, callback)
-			}
+			//} else {
+				//this.appendLines(d, callback)
+			//}
 		}
 	}
 
 	export(tasks, fileName, callback) {
+		console.time('exp')
 		this.exportCo = 1
 		fs.open(fileName, 'a', (e, fd) => {
 			this.fd = fd
@@ -425,6 +477,7 @@ class Parser extends EventEmitter {
 						this.onAfterExport((footer)=>{
 							fs.appendFile(this.fd, footer, (e) => {
 								fs.close(this.fd, (e) => {
+									console.timeEnd('exp')
 									callback(null)
 								})
 							})
@@ -432,7 +485,6 @@ class Parser extends EventEmitter {
 					})
 				})
 			})
-
 		})
 	}
 
