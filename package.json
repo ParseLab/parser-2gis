@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "bluebird": "*",
+    "electron-context-menu": "^0.13.0",
     "electron-is-dev": "*",
     "electron-updater": "^4.*",
     "iconv-lite": "*",

@@ -4,6 +4,8 @@ const fs = require('fs')
 var version = require('./version.json')
 
 const electron = require('electron');
+const contextMenu = require('electron-context-menu');
+contextMenu();
 
 const { autoUpdater } = require("electron-updater")
 const app = electron.app;

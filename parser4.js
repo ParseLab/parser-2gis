@@ -148,7 +148,7 @@ class Parser extends EventEmitter {
 
 				this.co += c
 
-				msg(this.co)
+				if (c > 0) msg(this.co)
 
 				fs.writeFile(dataDir + '/db/gis_' + this.curTaskId + '_' + this.curCity.code + '/' + rubricId + '.json', JSON.stringify(re), (e) => {
 					if (this.pool.length > 0) {
@@ -477,7 +477,6 @@ class Parser extends EventEmitter {
 	}
 
 	export(tasks, fileName, callback) {
-		console.time('exp')
 		this.exportCo = 1
 		fs.open(fileName, 'a', (e, fd) => {
 			this.fd = fd
@@ -487,7 +486,6 @@ class Parser extends EventEmitter {
 						this.onAfterExport((footer) => {
 							fs.appendFile(this.fd, footer, (e) => {
 								fs.close(this.fd, (e) => {
-									console.timeEnd('exp')
 									callback(null)
 								})
 							})

@@ -35,7 +35,7 @@ const Parser = require(__dirname + '/parser4.js')
 var plugins = fs.readdirSync(__dirname + '/plugins')
 
 for (var i = 0; i < plugins.length; i++) {
-	if (config.plugins.includes(plugins[i])){
+	if (config.plugins.includes(plugins[i])) {
 		require(__dirname + '/plugins/' + plugins[i])
 	}
 }
@@ -128,7 +128,7 @@ function loadDat(callback) {
 					
 				}
 		 */
-		
+
 		callback()
 	})
 }
@@ -191,6 +191,19 @@ function interface_init() {
 				},
 			]
 		}
+	})
+
+	webix.ui({
+		view: "context",
+		body:
+		{
+			view: "toolbar", cols: [
+				{ view: "button", value: "Button1", width: 100 },
+				{ view: "button", value: "Button2", width: 100 }
+			]
+		},
+		width: 210,
+		master: $$("keywin")
 	})
 
 	webix.ui({
@@ -315,6 +328,7 @@ function interface_init() {
 		}
 	})
 
+
 	$$("mywin").attachEvent("onKeyPress", function (code) {
 		if (code == '27') {
 			this.hide()
@@ -328,6 +342,8 @@ function closeWin() {
 		helpMsg(1)
 	}
 }
+
+
 
 function selectTask() {
 	$$("mytree").filter("#value#", '')
@@ -606,7 +622,7 @@ function exportBases() {
 		$$('exportbutton').disable()
 		dialog.showSaveDialog(win, { buttonLabel: "Выгрузить", defaultPath: dp, filters: [{ name: 'Excel', extensions: ['csv'] }] }, function (filename) {
 			if (filename) {
-				if(process.platform == 'linux') filename += '.csv'
+				if (process.platform == 'linux') filename += '.csv'
 				var checked = getChecked()
 				$$('exportwin').show()
 				$$('countlabel').setValue('0')
@@ -621,7 +637,7 @@ function exportBases() {
 					$$('exportbutton').enable()
 					$$('exportwin').hide()
 					uncheckMaster()
-					if(shell.openItem(filename)){
+					if (shell.openItem(filename)) {
 						setTimeout(() => {
 							webix.message.hide(h)
 						}, 5000)
@@ -699,7 +715,7 @@ function startParsing() {
 	$$('exportbutton').disable()
 	$$('propertybutton').disable()
 	webix.ui({ view: "button", id: "ctlbutton", type: "iconButton", icon: "fas fa-stop", label: "Стоп", autowidth: true, click: stopParsing, tooltip: "Остановка парсинга" }, $$('ctlbutton'))
-	
+
 	parser.start((r) => {
 		var id = $$('basestable').getIdByIndex(parser.curIndex)
 		var record = $$('basestable').getItem(id)

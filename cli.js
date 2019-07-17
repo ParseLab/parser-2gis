@@ -47,25 +47,27 @@ exports.start = () => {
 
             break
         case "parse":
-            var co = 0
+            var step = 0
             parser.start((r) => {
                 if (r.type) {
                     if (r.type == 'base') {
-                        co=0
                         this.log("Сборка города " + r.cityTitle + " завершена")
                     } else if (r.type == 'finish') {
                         this.log("Парсинг завершен")
                     }
                 } else {
-                    co+=r
-                    //if (r[0] % 100 == 0){
-                        this.log("City: " + parser.curCity.id + '  Firms: ' + co)
-                    //}
+                    step++
+                    if(step == 10){
+                        step = 0
+                        var i = parseInt(parser.co, 10)
+                        i++
+                        this.log("City: " + parser.curCity.id + '  Firms: ' + i)
+                    }
                 }
-            }, ()=>{
+            }, () => {
                 remote.process.exit(0)
             })
-            
+
             break
         default:
             this.help()

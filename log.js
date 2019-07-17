@@ -39,7 +39,6 @@ global.log = verbose
 global.error = function () {
     if (['error', 'warning', 'info', 'verbose'].includes(config.log.consoleLevel)) {
         cons.error(...arguments)
-        //console.error(...arguments)
     }
     if (['error', 'warning', 'info', 'verbose'].includes(config.log.fileLevel)) {
         writeFile(...arguments)
@@ -49,8 +48,6 @@ global.error = function () {
 
 
 function writeConsole(){
-    //cons.log(...arguments)    
-
     var args = [...arguments]
 
     for (var i = 0; i < args.length; i++) {
