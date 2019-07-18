@@ -45,8 +45,6 @@ global.error = function () {
     }
 }
 
-
-
 function writeConsole(){
     var args = [...arguments]
 

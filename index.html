@@ -78,8 +78,6 @@
 		* {
 			-webkit-user-select: none;
 		}
-
-
 	</style>
 </head>
 
@@ -93,7 +91,7 @@
 
 		global.remote = require('electron').remote
 		require('./config.js')
-		
+
 		const isDev = require('electron-is-dev');
 		var ver = JSON.parse(fs.readFileSync(__dirname + '/version.json'))
 		global.isBeta = false
@@ -106,7 +104,7 @@
 		var iface = require('./iface.js')
 		var cli = require('./cli.js')
 
-		global.autoUpdater = curWin.autoUpdater
+		
 
 		var lo = document.getElementById('loading')
 		var lw = document.createElement('div')
@@ -124,24 +122,6 @@
 		webix_skin = "flat";
 		process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true
 
-		autoUpdater.on('update-downloaded', () => {
-			info('Update downloaded.')
-			autoUpdater.quitAndInstall()
-		})
-
-		autoUpdater.on('update-available', (ev, info) => {
-			info('Update available!')
-			startLoader()
-		})
-
-		autoUpdater.on('update-not-available', (ev, info) => {
-			info('Update not available.')
-			if(!config.headless) startIface()
-		})
-
-		autoUpdater.on('download-progress', (r) => {
-			setProgress(r.percent)
-		})
 
 		function setProgress(i) {
 			if (i < 0) i = 0
@@ -161,12 +141,41 @@
 			curWin.show()
 		}
 
+		function startUpdate(){
+			global.autoUpdater = curWin.autoUpdater
+			autoUpdater.on('update-downloaded', () => {
+				info('Update downloaded.')
+				autoUpdater.quitAndInstall()
+			})
+
+			autoUpdater.on('update-available', (ev, info) => {
+				info('Update available!')
+				startLoader()
+			})
+
+			autoUpdater.on('update-not-available', (ev, info) => {
+				info('Update not available.')
+				if (!config.headless) startIface()
+			})
+
+			autoUpdater.on('download-progress', (r) => {
+				setProgress(r.percent)
+			})
+
+			//autoUpdater.checkForUpdates()
+		}
+
+		startIface()
+			//console.log('isDev:', isDev, 'process.platform:',process.platform , 'isBeta:', isBeta)
 		if (!isDev && process.platform != 'linux' && !isBeta) {
 			info('Checking for updates.')
-			autoUpdater.checkForUpdates()
+			
+			//startUpdate()
+
+
 		} else {
-			if(!config.headless) {
-				startIface()
+			if (!config.headless) {
+				//startIface()
 			} else {
 				info('Parser started in headless mode. Cli module start')
 				cli.start()

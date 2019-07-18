@@ -1,6 +1,6 @@
 {
   "name": "parser2gis4",
-  "version": "4.0.4",
+  "version": "4.0.11",
   "description": "Parser 2Gis",
   "main": "main.js",
   "scripts": {
